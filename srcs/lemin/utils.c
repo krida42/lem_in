@@ -2,31 +2,57 @@
 
 void ft_free_lemin(t_lemin* lemin)
 {
-	if (lemin)
+	if (!lemin)
+		return;
+
+	if (lemin->ants)
 	{
-		if (lemin->rooms_by_id)
+		for (int i = 0; i < lemin->nb_ants; i++)
 		{
-			for (int i = 0; i < lemin->nb_rooms; i++)
+			if (lemin->ants[i])
 			{
-				t_room* room = lemin->rooms_by_id[i];
-				if (room)
+				free(lemin->ants[i]);
+				lemin->ants[i] = NULL;
+			}
+		}
+		free(lemin->ants);
+		lemin->ants = NULL;
+	}
+
+	if (lemin->rooms_by_id)
+	{
+		for (int i = 0; i < lemin->nb_rooms; i++)
+		{
+			t_room* room = lemin->rooms_by_id[i];
+			if (room)
+			{
+				if (room->name)
 				{
 					free(room->name);
-					t_list* link = room->links;
-					while (link)
-					{
-						free(link->content);
-						t_list* temp = link;
-						link = link->next;
-						free(temp);
-					}
-					free(room);
+					room->name = NULL;
 				}
+
+				t_list* link = room->links;
+				while (link)
+				{
+					t_list* temp = link;
+					link = link->next;
+					if (temp->content)
+					{
+						free(temp->content);
+						temp->content = NULL;
+					}
+					free(temp);
+				}
+				room->links = NULL;
+				free(room);
 			}
-			free(lemin->rooms_by_id);
 		}
-		free(lemin);
+		free(lemin->rooms_by_id);
+		lemin->rooms_by_id = NULL;
 	}
+
+	free(lemin);
 }
 
 void ft_error(char* msg, t_lemin* lemin, const char* file, int line)

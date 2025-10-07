@@ -5,6 +5,7 @@ void init_lemin(t_lemin* lemin)
 	lemin->nb_ants = 0;
 	lemin->nb_rooms = 0;
 	lemin->rooms_by_id = NULL;
+	lemin->ants = NULL;
 	lemin->start_id = -1;
 	lemin->end_id = -1;
 }

@@ -36,7 +36,35 @@ int main(int argc, const char* argv[])
 		ft_error(
 		  "ERROR: Failed to generate test graph.", NULL, __FILE__, __LINE__);
 
-	display_lemin(lemin);
+	ft_printf("%d\n", lemin->nb_ants);
+
+	for (int i = 0; i < lemin->nb_rooms; i++)
+	{
+		t_room* room = lemin->rooms_by_id[i];
+		if (i == lemin->start_id)
+			ft_printf("##start\n");
+		if (i == lemin->end_id)
+			ft_printf("##end\n");
+		ft_printf("%s %d %d\n", room->name, i, i); // x=id, y=id
+	}
+
+	for (int i = 0; i < lemin->nb_rooms; i++)
+	{
+		t_room* room = lemin->rooms_by_id[i];
+		t_list* link = room->links;
+		while (link)
+		{
+			int linked_id = *(int*)link->content;
+			if (i < linked_id)
+				ft_printf(
+				  "%s-%s\n", room->name, lemin->rooms_by_id[linked_id]->name);
+			link = link->next;
+		}
+	}
+
+	ft_printf("\n");
+
+	simulate_ants(lemin);
 
 	if (lemin)
 	{
