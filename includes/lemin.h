@@ -43,4 +43,17 @@ typedef struct s_lemin
 	int end_id;	  // ID de ##end
 } t_lemin;
 
+// utils.c
+void ft_error(char* msg, t_lemin* lemin, const char* file, int line);
+void ft_free_lemin(t_lemin* lemin);
+
+// parsing.c
+void init_lemin(t_lemin* lemin);
+t_room* create_room(int id, const char* name);
+void add_directed_link(t_room* from, int to_id);
+t_lemin* parsing(const char* input_file);
+
+// test_generator.c
+t_lemin* generate_test(void);
+
 #endif

@@ -1,7 +1,7 @@
 NAME = lem-in
 
 CXX = cc
-CXXFLAGS = -Wall -Wextra -Werror -ggdb3
+CXXFLAGS = -Wall -Wextra -Werror
 
 INC = -I includes/ -I libft/
 
@@ -9,7 +9,7 @@ LIBFT_DIR = libft/
 LIBFT_A = $(LIBFT_DIR)libft.a
 
 SRCS_DIR = srcs/lemin/
-SRCS_FILES = main.c
+SRCS_FILES = main.c parsing.c pathfinding_bfs.c test_generator.c utils.c
 
 SRCS = $(addprefix $(SRCS_DIR), $(SRCS_FILES))
 
@@ -37,5 +37,8 @@ fclean: clean
 	@$(MAKE) -C $(LIBFT_DIR) fclean
 
 re: fclean all
+
+valgrind: re
+	valgrind --leak-check=full --show-leak-kinds=all ./$(NAME)
 
 .PHONY: all clean fclean re
