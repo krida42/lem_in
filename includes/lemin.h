@@ -82,14 +82,25 @@ void free_path(t_path* path);
 t_path* reconstruct_path(t_lemin* lemin, int start_id, int end_id);
 t_path** find_multiple_paths(t_lemin* lemin, int max_paths);
 int count_valid_paths(t_path** paths, int max_paths);
+bool paths_inter_rooms(t_path* path1, t_path* path2);
+t_path* bfs_find_otherpath(t_lemin* lemin,
+							   int start_id,
+							   int end_id,
+							   t_path** existing_paths,
+							   int nb_existing);
+bool is_room_in_path(t_path* path, int room_id, bool exclude_endpoints);
 
 // simulation.c
 void simulate_ants(t_lemin* lemin);
 void init_ants(t_lemin* lemin, t_path** paths, int nb_paths);
+void optimize_ants(t_lemin* lemin, t_path** paths, int nb_paths);
 t_list* move_ants_one_turn(t_lemin* lemin);
 void print_moves(t_list* moves);
 void free_moves(t_list* moves);
-bool all_ants_finished(t_lemin* lemin);
+bool finish_ants(t_lemin* lemin);
 int get_room_id_from_path(t_path* path, int position);
+int distribution_cost(int* ants_per_path,
+									 t_path** paths,
+									 int nb_paths);
 
 #endif

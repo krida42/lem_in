@@ -47,9 +47,92 @@ void init_ants(t_lemin* lemin, t_path** paths, int nb_paths)
 		lemin->ants[i]->current_room_id = lemin->start_id;
 		lemin->ants[i]->path_position = 0;
 
-		// TODO: Optimiser la repartition des fourmis sur plusieurs paths
 		lemin->ants[i]->path = paths[0];
 	}
+}
+
+int distribution_cost(int* ants_per_path, t_path** paths, int nb_paths)
+{
+	int max_turns = 0;
+
+	for (int i = 0; i < nb_paths; i++)
+	{
+		if (!paths[i])
+			continue;
+
+		// Formule: turns = number_of_ants + path_length - 1
+		int turns = ants_per_path[i] + paths[i]->len - 1;
+
+		if (turns > max_turns)
+			max_turns = turns;
+	}
+
+	return (max_turns);
+}
+
+void optimize_ants(t_lemin* lemin, t_path** paths, int nb_paths)
+{
+	if (!lemin || !paths || nb_paths <= 0)
+		return;
+
+	lemin->ants = malloc(sizeof(t_ant*) * lemin->nb_ants);
+	if (!lemin->ants)
+		ft_error(
+		  "ERROR: Malloc failed for ants array.", lemin, __FILE__, __LINE__);
+
+	int* ants_per_paths = malloc(sizeof(int) * nb_paths);
+	if (!ants_per_paths)
+		ft_error(
+		  "ERROR: Malloc failed for ants_per_path.", lemin, __FILE__, __LINE__);
+
+	for (int i = 0; i < nb_paths; i++)
+		ants_per_paths[i] = 0;
+
+	for (int ant = 0; ant < lemin->nb_ants; ant++)
+	{
+		int best_path = 0;
+		int min_turns = INT_MAX;
+
+		for (int i = 0; i < nb_paths; i++)
+		{
+			if (!paths[i])
+				continue;
+
+			ants_per_paths[i]++;
+			int turns = distribution_cost(ants_per_paths, paths, nb_paths);
+
+			if (turns < min_turns)
+			{
+				min_turns = turns;
+				best_path = i;
+			}
+
+			ants_per_paths[i]--;
+		}
+
+		ants_per_paths[best_path]++;
+	}
+
+	int ant_index = 0;
+	for (int path_idx = 0; path_idx < nb_paths; path_idx++)
+	{
+		for (int i = 0; i < ants_per_paths[path_idx]; i++)
+		{
+			lemin->ants[ant_index] = malloc(sizeof(t_ant));
+			if (!lemin->ants[ant_index])
+				ft_error(
+				  "ERROR: Malloc failed for ant.", lemin, __FILE__, __LINE__);
+
+			lemin->ants[ant_index]->id = ant_index + 1;
+			lemin->ants[ant_index]->current_room_id = lemin->start_id;
+			lemin->ants[ant_index]->path_position = 0;
+			lemin->ants[ant_index]->path = paths[path_idx];
+
+			ant_index++;
+		}
+	}
+
+	free(ants_per_paths);
 }
 
 t_move* create_move(int ant_id,
@@ -69,7 +152,7 @@ t_move* create_move(int ant_id,
 	return (move);
 }
 
-bool all_ants_finished(t_lemin* lemin)
+bool finish_ants(t_lemin* lemin)
 {
 	if (!lemin || !lemin->ants)
 		return (true);
@@ -163,17 +246,18 @@ void simulate_ants(t_lemin* lemin)
 	if (!lemin)
 		return;
 
-	t_path** paths = find_multiple_paths(lemin, 3);
+	t_path** paths = find_multiple_paths(lemin, 10);
 	if (!paths || !paths[0])
 	{
 		ft_printf("ERROR\n");
 		return;
 	}
 
-	int nb_paths = count_valid_paths(paths, 3);
-	init_ants(lemin, paths, nb_paths);
+	int nb_paths = count_valid_paths(paths, 10);
 
-	while (!all_ants_finished(lemin))
+	optimize_ants(lemin, paths, nb_paths);
+
+	while (!finish_ants(lemin))
 	{
 		t_list* moves = move_ants_one_turn(lemin);
 

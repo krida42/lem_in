@@ -199,6 +199,152 @@ int count_valid_paths(t_path** paths, int max_paths)
 	return (count);
 }
 
+bool is_room_in_path(t_path* path, int room_id, bool exclude_endpoints)
+{
+	if (!path || !path->room_ids)
+		return (false);
+
+	t_list* current = path->room_ids;
+	int position = 0;
+
+	while (current)
+	{
+		int path_room_id = *(int*)current->content;
+
+		if (exclude_endpoints && (position == 0 || current->next == NULL))
+		{
+			current = current->next;
+			position++;
+			continue;
+		}
+
+		if (path_room_id == room_id)
+			return (true);
+
+		current = current->next;
+		position++;
+	}
+	return (false);
+}
+
+bool paths_inter_rooms(t_path* path1, t_path* path2)
+{
+	if (!path1 || !path2 || !path1->room_ids || !path2->room_ids)
+		return (false);
+
+	t_list* current = path1->room_ids->next; // skip start
+
+	while (current && current->next) // skip end
+	{
+		int room_id = *(int*)current->content;
+
+		if (is_room_in_path(path2, room_id, true))
+			return (true);
+
+		current = current->next;
+	}
+
+	return (false);
+}
+
+t_path* bfs_find_otherpath(t_lemin* lemin,
+						   int start_id,
+						   int end_id,
+						   t_path** existing_paths,
+						   int nb_existing)
+{
+	if (!lemin || !lemin->rooms_by_id || start_id < 0 || end_id < 0 ||
+		start_id >= lemin->nb_rooms || end_id >= lemin->nb_rooms)
+		return (NULL);
+
+	reset_room_states(lemin);
+
+	for (int i = 0; i < nb_existing; i++)
+	{
+		if (!existing_paths[i])
+			continue;
+
+		t_list* current = existing_paths[i]->room_ids;
+		int position = 0;
+
+		while (current)
+		{
+			int room_id = *(int*)current->content;
+
+			if (room_id != start_id && room_id != end_id)
+				lemin->rooms_by_id[room_id]->visited = true;
+
+			current = current->next;
+			position++;
+		}
+	}
+
+	t_list* queue = NULL;
+
+	lemin->rooms_by_id[start_id]->visited = true;
+	lemin->rooms_by_id[start_id]->parent_id = -1;
+
+	int* start_ptr = malloc(sizeof(int));
+	if (!start_ptr)
+		return (NULL);
+
+	*start_ptr = start_id;
+	ft_lstadd_back(&queue, ft_lstnew(start_ptr));
+
+	while (queue)
+	{
+		t_list* current_node = queue;
+		int current_id = *(int*)current_node->content;
+		queue = queue->next;
+		free(current_node->content);
+		free(current_node);
+
+		if (current_id == end_id)
+		{
+			while (queue)
+			{
+				t_list* temp = queue;
+				queue = queue->next;
+				free(temp->content);
+				free(temp);
+			}
+			return (reconstruct_path(lemin, start_id, end_id));
+		}
+
+		t_room* current_room = lemin->rooms_by_id[current_id];
+		t_list* link = current_room->links;
+
+		while (link)
+		{
+			int neighbor_id = *(int*)link->content;
+
+			if (!lemin->rooms_by_id[neighbor_id]->visited)
+			{
+				lemin->rooms_by_id[neighbor_id]->visited = true;
+				lemin->rooms_by_id[neighbor_id]->parent_id = current_id;
+
+				int* neighbor_ptr = malloc(sizeof(int));
+				if (!neighbor_ptr)
+				{
+					while (queue)
+					{
+						t_list* temp = queue;
+						queue = queue->next;
+						free(temp->content);
+						free(temp);
+					}
+					return (NULL);
+				}
+				*neighbor_ptr = neighbor_id;
+				ft_lstadd_back(&queue, ft_lstnew(neighbor_ptr));
+			}
+			link = link->next;
+		}
+	}
+
+	return (NULL);
+}
+
 t_path** find_multiple_paths(t_lemin* lemin, int max_paths)
 {
 	if (!lemin || max_paths <= 0)
@@ -212,7 +358,22 @@ t_path** find_multiple_paths(t_lemin* lemin, int max_paths)
 		paths[i] = NULL;
 
 	paths[0] = bfs_find_path(lemin, lemin->start_id, lemin->end_id);
-	// TODO: Ajouter la logique pour trouver plusieurs chemins disjoints
+
+	if (!paths[0])
+		return (paths);
+
+	int found_paths = 1;
+	for (int i = 1; i < max_paths; i++)
+	{
+		t_path* new_path = bfs_find_otherpath(
+		  lemin, lemin->start_id, lemin->end_id, paths, found_paths);
+
+		if (!new_path)
+			break;
+
+		paths[found_paths] = new_path;
+		found_paths++;
+	}
 
 	return (paths);
 }
