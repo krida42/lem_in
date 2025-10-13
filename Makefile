@@ -2,14 +2,15 @@ NAME = lem-in
 
 CXX = cc
 CXXFLAGS = -Wall -Wextra -Werror -ggdb3
+CXXFLAGS = -ggdb3 -g -fsanitize=address #temporaire pour test 
 
-INC = -I includes/ -I libft/
+INC = -I includes/ -I libft/include/
 
 LIBFT_DIR = libft/
 LIBFT_A = $(LIBFT_DIR)libft.a
 
 SRCS_DIR = srcs/lemin/
-SRCS_FILES = main.c
+SRCS_FILES = main.c parsing.c
 
 SRCS = $(addprefix $(SRCS_DIR), $(SRCS_FILES))
 

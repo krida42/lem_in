@@ -1,4 +1,4 @@
-#include "../../includes/lemin.h"
+#include "lemin.h"
 
 void ft_error(const char* msg, t_lemin* lemin)
 {
@@ -111,6 +111,12 @@ t_lemin* generate_test_graph(void)
 
 int main(void)
 {
+
+	printf("salut tout le monde");
+	t_lemin* lemin_kev = parse(0);
+	free_everything_lemin(lemin_kev);
+	return 0;
+
 	t_lemin* lemin = generate_test_graph();
 	if (!lemin)
 		ft_error("ERROR: Failed to generate test graph.", NULL);
@@ -129,5 +135,6 @@ int main(void)
 		}
 		ft_printf("\n");
 	}
+	lemin_print_map_pretty(lemin);
 	return (0);
 }
