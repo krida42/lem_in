@@ -1,17 +1,30 @@
 #ifndef LEMIN_H
 #define LEMIN_H
 
-#include "../libs/libft/include/libft.h"
+#include "libft.h"
+#include "get_next_line.h"
 #include <limits.h>	 // INT_MAX
 #include <stdbool.h> // true, false
 #include <unistd.h>	 // write
+#include <stdio.h> // printf (pour les test pendant le dev) - -  A RETIRER
 
-#define PARSING_ANTS 0
-#define PARSING_ROOMS 1
-#define PARSING_LINKS 2
+
 
 #define ERROR -1
 #define SUCCESS 0
+
+
+enum RoomType {
+	ROOM_TYPE_UNKNOWN,
+	ROOM_START,
+	ROOM_END
+};
+
+enum ParsingState {
+	PARSING_ANTS,
+	PARSING_ROOMS,
+	PARSING_LINKS
+};
 
 typedef struct s_room
 {
@@ -68,7 +81,7 @@ void ft_free_lemin(t_lemin* lemin);
 void init_lemin(t_lemin* lemin);
 t_room* create_room(int id, const char* name);
 void add_directed_link(t_room* from, int to_id);
-t_lemin* parsing(const char* input_file);
+//t_lemin* parsing(const char* input_file);
 
 // test_generator.c
 t_lemin* generate_test(void);
@@ -102,5 +115,9 @@ int get_room_id_from_path(t_path* path, int position);
 int distribution_cost(int* ants_per_path,
 									 t_path** paths,
 									 int nb_paths);
+
+t_lemin *parse(int fd);
+void lemin_print_map_pretty(const t_lemin *lem);
+void free_everything_lemin(t_lemin *lemin);
 
 #endif

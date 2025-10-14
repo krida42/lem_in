@@ -1,5 +1,6 @@
 #include "../../includes/lemin.h"
 
+
 void display_lemin(t_lemin* lemin)
 {
 	ft_printf("Number of ants: %d\n", lemin->nb_ants);
@@ -29,9 +30,9 @@ int main(int argc, const char* argv[])
 		return (1);
 	}
 
-	const char* input_file = (argc == 2) ? argv[1] : NULL;
+	//const char* input_file = (argc == 2) ? argv[1] : NULL;
 
-	t_lemin* lemin = parsing(input_file);
+	t_lemin* lemin = parse(0);
 	if (!lemin)
 		ft_error(
 		  "ERROR: Failed to generate test graph.", NULL, __FILE__, __LINE__);

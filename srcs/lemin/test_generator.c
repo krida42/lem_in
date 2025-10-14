@@ -1,4 +1,4 @@
-#include "../../includes/lemin.h"
+#include "lemin.h"
 
 t_lemin* generate_test(void)
 {

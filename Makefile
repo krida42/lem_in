@@ -4,17 +4,17 @@ NAME_BONUS = visu
 CXX = cc
 CXXFLAGS = -Wall -Wextra -Werror -ggdb3
 
-INC = -I includes/ -I $(LIBFT_DIR) -I $(RAYLIB_DIR)
+INC = -I includes/ -I $(LIBFT_DIR)/include -I $(RAYLIB_DIR)
 INC_BONUS = -I $(RAYLIB_DIR)
 
-LIBFT_DIR = libs/libft/
+LIBFT_DIR = libft/
 LIBFT_A = $(LIBFT_DIR)libft.a
 
 RAYLIB_DIR = libs/raylib/src/
 RAYLIB_A = $(RAYLIB_DIR)libraylib.a
 
 SRCS_DIR = srcs/lemin/
-SRCS_FILES = main.c parsing.c pathfinding_bfs.c simulation.c test_generator.c utils.c
+SRCS_FILES = main.c parsing.c pathfinding_bfs.c simulation.c  utils.c
 
 SRCS_BONUS_DIR = srcs/visu/
 SRCS_BONUS_FILES = main_visu.c
