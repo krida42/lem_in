@@ -8,6 +8,7 @@
 #include <unistd.h>	 // write
 #include <stdio.h> // printf (pour les test pendant le dev) - -  A RETIRER
 
+#include "raylib.h"
 
 
 #define ERROR -1
@@ -59,6 +60,7 @@ typedef struct s_move
 	int from_room_id;
 	int to_room_id;
 	char* to_room_name;
+	float time_interpolation; // between 0.0 and 1.0 for visualization
 } t_move;
 
 typedef struct s_lemin
@@ -71,6 +73,9 @@ typedef struct s_lemin
 
 	int start_id; // ID de ##start
 	int end_id;	  // ID de ##end
+
+	t_list *moves_steps; // Liste chaînée des étapes de mouvements (t_list de t_list de t_move) pour chaque tour pour la visualisation
+	int nb_ants_who_left_start; // Nombre de fourmis qui ont quitté la salle de départ jusqu'à l'étape actuelle, pour la visualisation
 } t_lemin;
 
 // utils.c
@@ -119,5 +124,15 @@ int distribution_cost(int* ants_per_path,
 t_lemin *parse(int fd);
 void lemin_print_map_pretty(const t_lemin *lem);
 void free_everything_lemin(t_lemin *lemin);
+
+
+// draw.c
+void draw_rooms(t_lemin* lemin);
+int draw_step_with_time_interpolation(t_lemin* lemin, t_list* current_moves_step, float time);
+void apply_offset_and_margin_to_all_room_positions(t_lemin* lemin, int offset_x, int offset_y, int margin);
+void apply_clamping_screen_bounds_to_all_room_positions(t_lemin* lemin, int screen_width, int screen_height, int margin);
+void draw_line_between_rooms(t_room* from, t_room* to, Color color);
+int calculate_number_of_ants_who_left_start_in_current_step(t_lemin* lemin, t_list* current_moves_step);
+
 
 #endif

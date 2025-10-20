@@ -2,7 +2,7 @@ NAME = lem-in
 NAME_BONUS = visu
 
 CXX = cc
-CXXFLAGS = -Wall -Wextra -Werror -ggdb3
+CXXFLAGS = -Wall -Wextra -Werror -ggdb3 -fsanitize=address -g3
 
 INC = -I includes/ -I $(LIBFT_DIR)/include -I $(RAYLIB_DIR)
 INC_BONUS = -I $(RAYLIB_DIR)
@@ -12,12 +12,15 @@ LIBFT_A = $(LIBFT_DIR)libft.a
 
 RAYLIB_DIR = libs/raylib/src/
 RAYLIB_A = $(RAYLIB_DIR)libraylib.a
+RATLIB_DEP = -lGL -lm -lpthread -ldl -lrt -lX11
 
 SRCS_DIR = srcs/lemin/
-SRCS_FILES = main.c parsing.c pathfinding_bfs.c simulation.c  utils.c
+SRCS_FILES = main.c parsing.c pathfinding_bfs.c simulation.c  utils.c draw.c
 
 SRCS_BONUS_DIR = srcs/visu/
 SRCS_BONUS_FILES = main_visu.c
+# SRCS_BONUS_DIR = $(SRCS_DIR)
+# SRCS_BONUS_FILES = $(SRCS_FILES)
 
 SRCS = $(addprefix $(SRCS_DIR), $(SRCS_FILES))
 SRCS_BONUS = $(addprefix $(SRCS_BONUS_DIR), $(SRCS_BONUS_FILES))
@@ -29,7 +32,7 @@ OBJS_BONUS = $(patsubst $(SRCS_BONUS_DIR)%.c, $(OBJS_DIR)bonus_%.o, $(SRCS_BONUS
 all: $(NAME)
 
 $(NAME): $(OBJS) $(LIBFT_A)
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBFT_A) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBFT_A) $(RATLIB_DEP) $(RAYLIB_A) -o $(NAME)
 
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.c
 	@mkdir -p $(OBJS_DIR)

@@ -77,8 +77,6 @@ void print_lemin(t_lemin *lemin) {
 	printf("End room name: '%s', ID: (%d)\n", lemin->rooms_by_id[lemin->end_id]->name, lemin->end_id);
 	printf("\nRooms details:\n");
 
-	// print all the rooms beaitfully with there coordinates and links, I want it to be pretty, with color
-	// I want it to be very visual with arrows and everything
 	for (int i = 0; i < lemin->nb_rooms; i++) {
 		t_room *room = lemin->rooms_by_id[i];
 		if (!room) {
@@ -205,19 +203,6 @@ void free_and_quit(t_lemin *lemin, t_room *room, char *line) {
 	ft_error("ERROR, free_and_quit", lemin, __FILE__, __LINE__);
 }
 
-void free_everything_lemin(t_lemin *lemin) {
-	if (lemin) {
-		if (lemin->rooms_by_id) {
-			for (int i = 0; i < lemin->nb_rooms; i++) {
-				if (lemin->rooms_by_id[i]) {
-					free_room(lemin->rooms_by_id[i]);
-				}
-			}
-			free(lemin->rooms_by_id);
-		}
-		free(lemin);
-	}
-}
 
 
 void clean_quit_if_room_name_already_used(t_lemin *lemin, t_room *room, char *line) {
@@ -378,6 +363,10 @@ t_lemin *parse(int fd) {
 	lemin->rooms_by_id = NULL;
 	lemin->start_id = -1;
 	lemin->end_id = -1;
+	lemin->moves_steps = NULL;
+	lemin->ants = NULL;
+	lemin->nb_ants_who_left_start = 0;
+	
 
 	printf("Initial lemin state: nb_ants=%d, nb_rooms=%d, start_id=%d, end_id=%d\n",
 		   lemin->nb_ants, lemin->nb_rooms, lemin->start_id, lemin->end_id);
@@ -410,7 +399,7 @@ t_lemin *parse(int fd) {
 
 	}
 
-	print_lemin(lemin);
+	// print_lemin(lemin);
 	
 
 	return lemin;

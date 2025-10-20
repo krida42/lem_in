@@ -148,6 +148,7 @@ t_move* create_move(int ant_id,
 	move->from_room_id = from_room_id;
 	move->to_room_id = to_room_id;
 	move->to_room_name = ft_strdup(to_room_name);
+	move->time_interpolation = 0.0f; // Initialize to 0.0 for visualization
 
 	return (move);
 }
@@ -264,7 +265,10 @@ void simulate_ants(t_lemin* lemin)
 		if (moves)
 		{
 			print_moves(moves);
-			free_moves(moves);
+			t_list *new_node = ft_lstnew(moves);
+			
+			ft_lstadd_back(&lemin->moves_steps, new_node);
+			// free_moves(moves); free it later for visualization, free it in ft_free_lemin
 		}
 	}
 

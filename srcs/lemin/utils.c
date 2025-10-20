@@ -52,6 +52,22 @@ void ft_free_lemin(t_lemin* lemin)
 		lemin->rooms_by_id = NULL;
 	}
 
+	if (lemin->moves_steps)
+	{
+		t_list* current_step = lemin->moves_steps;
+		while (current_step)
+		{
+			t_list* moves = (t_list*)current_step->content;
+			free_moves(moves);
+
+			t_list* temp_step = current_step;
+			current_step = current_step->next;
+			free(temp_step);
+		}
+		lemin->moves_steps = NULL;
+	}
+
+
 	free(lemin);
 }
 
