@@ -1,4 +1,80 @@
-#include "../../includes/lemin.h"
+#include "../include/lemin.h"
+
+int ft_strcmp(const char* s1, const char* s2)
+{
+	return ft_strncmp(s1, s2, INT_MAX);
+}
+
+char* get_next_line_wnl(int fd)
+{
+	char* str = get_next_line(fd);
+
+	if (!str)
+		return NULL;
+	char* newline_pos = ft_strchr(str, '\n');
+	if (newline_pos)
+		*newline_pos = '\0';
+	return str;
+}
+
+void free_split(char** split_array)
+{
+	int i;
+
+	i = 0;
+	if (!split_array)
+		return;
+	while (split_array[i])
+	{
+		free(split_array[i]);
+		i++;
+	}
+	free(split_array);
+}
+
+void free_move(t_move* move)
+{
+	if (!move)
+		return;
+
+	if (move->to_room_name)
+	{
+		free(move->to_room_name);
+		move->to_room_name = NULL;
+	}
+	free(move);
+}
+
+void free_moves(t_list* moves)
+{
+	while (moves)
+	{
+		t_list* temp = moves;
+		moves = moves->next;
+
+		if (temp->content)
+			free_move((t_move*)temp->content);
+		free(temp);
+	}
+}
+
+t_move* create_move(int ant_id,
+					int from_room_id,
+					int to_room_id,
+					char* to_room_name)
+{
+	t_move* move = malloc(sizeof(t_move));
+	if (!move)
+		return (NULL);
+
+	move->ant_id = ant_id;
+	move->from_room_id = from_room_id;
+	move->to_room_id = to_room_id;
+	move->to_room_name = ft_strdup(to_room_name);
+	move->time_interpolation = 0.0f;
+
+	return (move);
+}
 
 void ft_free_lemin(t_lemin* lemin)
 {
@@ -67,21 +143,18 @@ void ft_free_lemin(t_lemin* lemin)
 		lemin->moves_steps = NULL;
 	}
 
-
 	free(lemin);
 }
 
 void ft_error(char* msg, t_lemin* lemin, const char* file, int line)
 {
-	ft_printf("ERROR [%s:%d]: %s\n", file, line, msg);
+	(void)msg;
+	(void)file;
+	(void)line;
 
-	if (msg)
-		ft_printf("%s\n", msg);
+	ft_putendl_fd("ERROR", 1);
 
 	if (lemin)
-	{
-		ft_printf("Freeing lemin structure...\n");
 		ft_free_lemin(lemin);
-	}
 	exit(EXIT_FAILURE);
 }

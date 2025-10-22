@@ -1,51 +1,49 @@
 NAME = lem-in
-NAME_BONUS = visu
+VISU = visu
 
 CXX = cc
-CXXFLAGS = -Wall -Wextra -Werror -ggdb3 -fsanitize=address -g3
+CXXFLAGS = -Wall -Wextra -Werror -ggdb3
 
 INC = -I includes/ -I $(LIBFT_DIR)/include -I $(RAYLIB_DIR)
 INC_BONUS = -I $(RAYLIB_DIR)
 
-LIBFT_DIR = libft/
+LIBS_DIR = ./libs
+
+LIBFT_DIR = $(LIBS_DIR)/libft/
 LIBFT_A = $(LIBFT_DIR)libft.a
 
-RAYLIB_DIR = libs/raylib/src/
+RAYLIB_DIR = $(LIBS_DIR)/raylib/src/
 RAYLIB_A = $(RAYLIB_DIR)libraylib.a
-RATLIB_DEP = -lGL -lm -lpthread -ldl -lrt -lX11
+RAYLIB_DEP = -lGL -lm -lpthread -ldl -lrt -lX11
 
-SRCS_DIR = srcs/lemin/
-SRCS_FILES = main.c parsing.c pathfinding_bfs.c simulation.c  utils.c draw.c
-
-SRCS_BONUS_DIR = srcs/visu/
-SRCS_BONUS_FILES = main_visu.c
-# SRCS_BONUS_DIR = $(SRCS_DIR)
-# SRCS_BONUS_FILES = $(SRCS_FILES)
+SRCS_DIR = srcs/
+SRCS_FILES = main.c parsing.c pathfinding_bfs.c simulation.c  utils.c
 
 SRCS = $(addprefix $(SRCS_DIR), $(SRCS_FILES))
-SRCS_BONUS = $(addprefix $(SRCS_BONUS_DIR), $(SRCS_BONUS_FILES))
 
 OBJS_DIR = objs/
 OBJS = $(patsubst $(SRCS_DIR)%.c, $(OBJS_DIR)%.o, $(SRCS))
-OBJS_BONUS = $(patsubst $(SRCS_BONUS_DIR)%.c, $(OBJS_DIR)bonus_%.o, $(SRCS_BONUS))
+
+VISU_SRC = visu.c
+VISU_OBJ = objs/visu.o
 
 all: $(NAME)
 
+bonus: $(VISU)
+
 $(NAME): $(OBJS) $(LIBFT_A)
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBFT_A) $(RATLIB_DEP) $(RAYLIB_A) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBFT_A) -o $(NAME)
+
+$(VISU): $(VISU_OBJ) $(OBJS_DIR)parsing.o $(OBJS_DIR)pathfinding_bfs.o $(OBJS_DIR)simulation.o $(OBJS_DIR)utils.o $(OBJS_DIR)draw.o $(LIBFT_A) $(RAYLIB_A)
+	$(CXX) $(CXXFLAGS) $(VISU_OBJ) $(OBJS_DIR)parsing.o $(OBJS_DIR)pathfinding_bfs.o $(OBJS_DIR)simulation.o $(OBJS_DIR)utils.o $(OBJS_DIR)draw.o $(LIBFT_A) $(RAYLIB_A) $(RAYLIB_DEP) -o $(VISU)
 
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.c
 	@mkdir -p $(OBJS_DIR)
 	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
-bonus: $(NAME_BONUS)
-
-$(NAME_BONUS): $(OBJS_BONUS) $(RAYLIB_A)
-	$(CXX) $(CXXFLAGS) $(OBJS_BONUS) $(RAYLIB_A) -lm -o $(NAME_BONUS)
-
-$(OBJS_DIR)bonus_%.o: $(SRCS_BONUS_DIR)%.c
+$(VISU_OBJ): $(VISU_SRC)
 	@mkdir -p $(OBJS_DIR)
-	$(CXX) $(CXXFLAGS) $(INC_BONUS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
 
 $(LIBFT_A):
 	@$(MAKE) -C $(LIBFT_DIR) bonus
@@ -58,7 +56,7 @@ clean:
 	@$(MAKE) -C $(LIBFT_DIR) clean
 
 fclean: clean
-	@rm -f $(NAME) $(NAME_BONUS)
+	@rm -f $(NAME) $(VISU)
 	@$(MAKE) -C $(LIBFT_DIR) fclean
 	@$(MAKE) -C $(RAYLIB_DIR) clean
 
@@ -67,7 +65,13 @@ re: fclean all
 valgrind: $(NAME)
 	valgrind --leak-check=full --show-leak-kinds=all -q ./$(NAME)
 
+MAP ?= maps/default.map
 run: $(NAME)
-	./$(NAME)
+	@if [ -f $(MAP) ]; then \
+		./$(NAME) < $(MAP); \
+	else \
+		echo "Map file $(MAP) not found. Running without input..."; \
+		./$(NAME); \
+	fi
 
 .PHONY: all bonus clean fclean re valgrind run

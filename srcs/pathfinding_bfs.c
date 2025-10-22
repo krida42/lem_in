@@ -1,4 +1,4 @@
-#include "../../includes/lemin.h"
+#include "../include/lemin.h"
 
 t_path* create_path(void)
 {

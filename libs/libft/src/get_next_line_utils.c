@@ -10,13 +10,13 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "../include/get_next_line.h"
 
-t_stream	*gnl_newstream(int fd)
+t_stream* gnl_newstream(int fd)
 {
-	t_stream	*stream;
+	t_stream* stream;
 
-	stream = (t_stream *) malloc(sizeof(*stream));
+	stream = (t_stream*)malloc(sizeof(*stream));
 	if (!stream)
 		return (NULL);
 	stream->fd = fd;
@@ -26,10 +26,10 @@ t_stream	*gnl_newstream(int fd)
 	return (stream);
 }
 
-t_stream	*gnl_recover_fd_stream(t_stream **stream_lst, int fd)
+t_stream* gnl_recover_fd_stream(t_stream** stream_lst, int fd)
 {
-	t_stream	*cur;
-	t_stream	*tmp;
+	t_stream* cur;
+	t_stream* tmp;
 
 	if (!*stream_lst)
 	{
@@ -48,12 +48,12 @@ t_stream	*gnl_recover_fd_stream(t_stream **stream_lst, int fd)
 	return (tmp->next);
 }
 
-int	gnl_recover_line(t_stream *stream, char	**line)
+int gnl_recover_line(t_stream* stream, char** line)
 {
-	int		len;
-	char	*little;
-	char	*temp_line;
-	int		index_temp;
+	int len;
+	char* little;
+	char* temp_line;
+	int index_temp;
 
 	len = gnl_strchri(stream->buf + stream->index, '\n') + 1;
 	temp_line = *line;
@@ -63,7 +63,7 @@ int	gnl_recover_line(t_stream *stream, char	**line)
 		gnl_free_line(temp_line);
 		return (0);
 	}
-	little = (char *) malloc(sizeof(*little) * (len + 1));
+	little = (char*)malloc(sizeof(*little) * (len + 1));
 	if (!little && !gnl_free_line(*line))
 		return (-1);
 	index_temp = stream->index;
@@ -76,9 +76,9 @@ int	gnl_recover_line(t_stream *stream, char	**line)
 	return (1);
 }
 
-int	gnl_strchri(char *s, unsigned char c)
+int gnl_strchri(char* s, unsigned char c)
 {
-	int	i;
+	int i;
 
 	i = 0;
 	if (!s)
@@ -91,15 +91,15 @@ int	gnl_strchri(char *s, unsigned char c)
 		return (-1);
 }
 
-char	*gnl_strjoin(char *s1, char *s2)
+char* gnl_strjoin(char* s1, char* s2)
 {
-	char	*joined;
-	size_t	len;
+	char* joined;
+	size_t len;
 
 	len = gnl_strchri(s1, '\0') + gnl_strchri(s2, '\0');
 	if (!len)
 		return (NULL);
-	joined = (char *)malloc(sizeof(char) * (len + 1));
+	joined = (char*)malloc(sizeof(char) * (len + 1));
 	if (!joined)
 		return (NULL);
 	while (s1 && *s1)

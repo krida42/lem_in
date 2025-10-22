@@ -10,15 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "../include/get_next_line.h"
 
-char	*get_next_line(int fd)
+char* get_next_line(int fd)
 {
-	static t_stream	*stream_lst = NULL;
-	t_stream		*stream;
-	char			*line;
-	int				ret_recover_line;
-	int				ret_read_stream;
+	static t_stream* stream_lst = NULL;
+	t_stream* stream;
+	char* line;
+	int ret_recover_line;
+	int ret_read_stream;
 
 	stream = gnl_recover_fd_stream(&stream_lst, fd);
 	line = NULL;
@@ -39,9 +39,9 @@ char	*get_next_line(int fd)
 	return (line);
 }
 
-int	gnl_read_stream(t_stream *stream)
+int gnl_read_stream(t_stream* stream)
 {
-	int	lenr;
+	int lenr;
 
 	lenr = read(stream->fd, stream->buf, BUFFER_SIZE);
 	if (lenr > -1)
@@ -49,21 +49,21 @@ int	gnl_read_stream(t_stream *stream)
 	return (lenr);
 }
 
-void	*gnl_free_line(char *line)
+void* gnl_free_line(char* line)
 {
 	if (line)
 		free(line);
 	return (NULL);
 }
 
-void	gnl_clear_stream(t_stream **stream_lst, t_stream *stream)
+void gnl_clear_stream(t_stream** stream_lst, t_stream* stream)
 {
-	t_stream	*cur;
-	t_stream	*prev;
+	t_stream* cur;
+	t_stream* prev;
 
 	cur = *stream_lst;
 	if (!*stream_lst)
-		return ;
+		return;
 	else if ((*stream_lst)->fd == stream->fd)
 	{
 		*stream_lst = (*stream_lst)->next;
@@ -79,7 +79,7 @@ void	gnl_clear_stream(t_stream **stream_lst, t_stream *stream)
 			{
 				prev->next = cur->next;
 				free(stream);
-				break ;
+				break;
 			}
 		}
 	}

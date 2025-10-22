@@ -1,5 +1,4 @@
-#include "lemin.h"
-
+#include "../include/lemin.h"
 
 void display_lemin(t_lemin* lemin)
 {
@@ -24,18 +23,13 @@ void display_lemin(t_lemin* lemin)
 
 int main(int argc, const char* argv[])
 {
-	if (argc > 2)
+	if (argc > 1)
 	{
-		ft_printf("Usage: %s [input_file]\n", argv[0]);
+		ft_printf("Usage: %s < [input_file]\n", argv[0]);
 		return (1);
 	}
 
-	//const char* input_file = (argc == 2) ? argv[1] : NULL;
-
 	t_lemin* lemin = parse(0);
-	if (!lemin)
-		ft_error(
-		  "ERROR: Failed to generate test graph.", NULL, __FILE__, __LINE__);
 
 	ft_printf("%d\n", lemin->nb_ants);
 
@@ -46,7 +40,7 @@ int main(int argc, const char* argv[])
 			ft_printf("##start\n");
 		if (i == lemin->end_id)
 			ft_printf("##end\n");
-		ft_printf("%s %d %d\n", room->name, i, i); // x=id, y=id
+		ft_printf("%s %d %d\n", room->name, room->x, room->y);
 	}
 
 	for (int i = 0; i < lemin->nb_rooms; i++)
@@ -74,4 +68,3 @@ int main(int argc, const char* argv[])
 	}
 	return (0);
 }
-
