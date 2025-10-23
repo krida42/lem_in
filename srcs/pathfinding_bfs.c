@@ -377,3 +377,130 @@ t_path** find_multiple_paths(t_lemin* lemin, int max_paths)
 
 	return (paths);
 }
+
+bool bfs_find_apath(t_lemin* lemin, int start_id, int end_id)
+{
+	for (int i = 0; i < lemin->nb_rooms; i++)
+		lemin->rooms_by_id[i]->parent_id = -1;
+
+	bool* visited = ft_calloc(lemin->nb_rooms, sizeof(bool));
+	if (!visited)
+		return (false);
+
+	t_list* queue = NULL;
+
+	visited[start_id] = true;
+	int* start_ptr = malloc(sizeof(int));
+	*start_ptr = start_id;
+	ft_lstadd_back(&queue, ft_lstnew(start_ptr));
+
+	bool path_found = false;
+	while (queue)
+	{
+		t_list* current_node = queue;
+		int u = *(int*)current_node->content;
+		queue = queue->next;
+		free(current_node->content);
+		free(current_node);
+
+		if (u == end_id)
+		{
+			path_found = true;
+			break;
+		}
+
+		for (int v = 0; v < lemin->nb_rooms; v++)
+		{
+			if (!visited[v] && lemin->capacity[u][v] > 0)
+			{
+				visited[v] = true;
+				lemin->rooms_by_id[v]->parent_id = u;
+
+				int* neighbor_ptr = malloc(sizeof(int));
+				*neighbor_ptr = v;
+				ft_lstadd_back(&queue, ft_lstnew(neighbor_ptr));
+			}
+		}
+	}
+
+	while (queue)
+	{
+		t_list* temp = queue;
+		queue = queue->next;
+		free(temp->content);
+		free(temp);
+	}
+	free(visited);
+	return (path_found);
+}
+
+t_path** edmonds_karp(t_lemin* lemin)
+{
+	int start_id = lemin->start_id;
+	int end_id = lemin->end_id;
+	int max_paths = lemin->nb_rooms;
+
+	while (bfs_find_apath(lemin, start_id, end_id))
+	{
+		int current = end_id;
+		while (current != start_id)
+		{
+			int prev = lemin->rooms_by_id[current]->parent_id;
+
+			lemin->capacity[prev][current] = 0;
+
+			lemin->capacity[current][prev] = 1;
+
+			current = prev;
+		}
+	}
+
+	t_path** paths = malloc(sizeof(t_path*) * (max_paths + 1));
+	if (!paths)
+		return (NULL);
+	for (int i = 0; i <= max_paths; i++)
+		paths[i] = NULL;
+
+	int path_count = 0;
+	while (true)
+	{
+		t_path* path = create_path();
+		int current = start_id;
+		add_room_to_path(path, current);
+
+		while (current != end_id)
+		{
+			int next = -1;
+			for (int i = 0; i < lemin->nb_rooms; i++)
+			{
+				if (lemin->capacity[current][i] == 0 &&
+					lemin->capacity[i][current] == 1 &&
+					!lemin->used[current][i])
+				{
+					next = i;
+					break;
+				}
+			}
+
+			if (next != -1)
+			{
+				add_room_to_path(path, next);
+				lemin->used[current][next] = 1;
+				current = next;
+			}
+			else
+			{
+				free_path(path);
+				path = NULL;
+				break;
+			}
+		}
+
+		if (path)
+			paths[path_count++] = path;
+		else
+			break;
+	}
+
+	return (paths);
+}

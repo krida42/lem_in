@@ -201,7 +201,7 @@ void simulate_ants(t_lemin* lemin)
 	if (!lemin)
 		return;
 
-	t_path** paths = find_multiple_paths(lemin, lemin->nb_rooms);
+	t_path** paths = edmonds_karp(lemin);
 	if (!paths || !paths[0])
 	{
 		ft_printf("ERROR\n");

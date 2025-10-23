@@ -1,6 +1,6 @@
 #include "../include/lemin.h"
 
-bool is_str_positive_number(const char* str)
+bool is_str_pnumber(const char* str)
 {
 	if (!str || *str == '\0')
 		return false;
@@ -42,58 +42,6 @@ bool is_end_command(const char* line)
 	return ft_strcmp(line, "##end") == 0;
 }
 
-void print_lemin(t_lemin* lemin)
-{
-	if (!lemin)
-	{
-		ft_printf("Lemin is NULL\n");
-		return;
-	}
-	ft_printf("- - - - - - - PRINT LEMIN PARSED - - - START- - \n");
-	ft_printf("Number of ants: %d\n", lemin->nb_ants);
-	ft_printf("Number of rooms: %d\n", lemin->nb_rooms);
-	ft_printf("Start room name: '%s', ID: (%d)\n",
-			  lemin->rooms_by_id[lemin->start_id]->name,
-			  lemin->start_id);
-	ft_printf("End room name: '%s', ID: (%d)\n",
-			  lemin->rooms_by_id[lemin->end_id]->name,
-			  lemin->end_id);
-	ft_printf("\nRooms details:\n");
-
-	for (int i = 0; i < lemin->nb_rooms; i++)
-	{
-		t_room* room = lemin->rooms_by_id[i];
-		if (!room)
-		{
-			ft_printf("Room %d is NULL\n", i);
-			continue;
-		}
-		ft_printf(
-		  "Room Name: '%s', ID: (%d), Coordinates: (%d, %d), Links to: ",
-		  room->name,
-		  room->id,
-		  room->x,
-		  room->y);
-		if (!room->links)
-		{
-			ft_printf("No links\n");
-		}
-		else
-		{
-			t_list* link = room->links;
-			while (link)
-			{
-				int* linked_id = (int*)link->content;
-				ft_printf("'%s'  ", lemin->rooms_by_id[*linked_id]->name);
-				link = link->next;
-			}
-			ft_printf("\n");
-		}
-	}
-
-	ft_printf("- - - - - - - PRINT LEMIN PARSED - - - END- - \n");
-}
-
 bool is_room_definition(const char* line)
 {
 	int i = 0;
@@ -130,8 +78,8 @@ t_room* parse_room(const char* line)
 		free_split(parts);
 		return NULL;
 	}
-	if (!is_room_name_valid(parts[0]) || !is_str_positive_number(parts[1]) ||
-		!is_str_positive_number(parts[2]))
+	if (!is_room_name_valid(parts[0]) || !is_str_pnumber(parts[1]) ||
+		!is_str_pnumber(parts[2]))
 	{
 		free_split(parts);
 		return NULL;
@@ -155,7 +103,7 @@ t_room* parse_room(const char* line)
 	return room;
 }
 
-bool is_room_name_already_used(t_lemin* lemin, const char* name)
+bool is_room_name(t_lemin* lemin, const char* name)
 {
 	for (int i = 0; i < lemin->nb_rooms; i++)
 		if (ft_strcmp(lemin->rooms_by_id[i]->name, name) == 0)
@@ -195,7 +143,7 @@ void clean_quit_if_room_name_already_used(t_lemin* lemin,
 										  t_room* room,
 										  char* line)
 {
-	if (is_room_name_already_used(lemin, room->name))
+	if (is_room_name(lemin, room->name))
 	{
 		free(line);
 		free_room(room);
@@ -203,7 +151,7 @@ void clean_quit_if_room_name_already_used(t_lemin* lemin,
 	}
 }
 
-void integrate_room_to_lemin(t_lemin* lemin, t_room* room, char* line)
+void room_to_lemin(t_lemin* lemin, t_room* room, char* line)
 {
 
 	clean_quit_if_room_name_already_used(lemin, room, line);
@@ -217,9 +165,7 @@ void integrate_room_to_lemin(t_lemin* lemin, t_room* room, char* line)
 	lemin->nb_rooms++;
 }
 
-void integrate_link_to_rooms(t_lemin* lemin,
-							 int parent_room_id,
-							 int child_room_id)
+void integrate_link_rooms(t_lemin* lemin, int parent_room_id, int child_room_id)
 {
 	if (parent_room_id < 0 || parent_room_id >= lemin->nb_rooms ||
 		child_room_id < 0 || child_room_id >= lemin->nb_rooms)
@@ -241,7 +187,7 @@ void integrate_link_to_rooms(t_lemin* lemin,
 	ft_lstadd_back(&lemin->rooms_by_id[parent_room_id]->links, new_link);
 }
 
-int get_room_id_by_name(t_lemin* lemin, const char* name)
+int get_room_id(t_lemin* lemin, const char* name)
 {
 	for (int i = 0; i < lemin->nb_rooms; i++)
 		if (ft_strcmp(lemin->rooms_by_id[i]->name, name) == 0)
@@ -249,9 +195,9 @@ int get_room_id_by_name(t_lemin* lemin, const char* name)
 	return -1;
 }
 
-enum ParsingState process_parsing_rooms(t_lemin* lemin,
-										char* line,
-										enum RoomType* next_room_type)
+enum ParsingState parsing_rooms(t_lemin* lemin,
+								char* line,
+								enum RoomType* next_room_type)
 {
 
 	t_room* room = parse_room(line);
@@ -271,7 +217,7 @@ enum ParsingState process_parsing_rooms(t_lemin* lemin,
 	*next_room_type = ROOM_TYPE_UNKNOWN;
 
 	if (room)
-		integrate_room_to_lemin(lemin, room, line);
+		room_to_lemin(lemin, room, line);
 	else if (is_start_command(line))
 		*next_room_type = ROOM_START;
 	else if (is_end_command(line))
@@ -295,7 +241,7 @@ char** parse_link(const char* line)
 
 int parse_ants(const char* line)
 {
-	if (!is_str_positive_number(line))
+	if (!is_str_pnumber(line))
 		return -1;
 	int ants = ft_atoi(line);
 	if (ants <= 0)
@@ -318,6 +264,38 @@ enum ParsingState process_parsing_ants(t_lemin* lemin, char* line)
 
 enum ParsingState process_parsing_links(t_lemin* lemin, char* line)
 {
+	if (!lemin->capacity)
+	{
+		lemin->capacity = malloc(sizeof(int*) * lemin->nb_rooms);
+		if (!lemin->capacity)
+			ft_error("ERROR: Malloc failed for capacity rows.",
+					 lemin,
+					 __FILE__,
+					 __LINE__);
+		for (int i = 0; i < lemin->nb_rooms; i++)
+		{
+			lemin->capacity[i] = ft_calloc(lemin->nb_rooms, sizeof(int));
+			if (!lemin->capacity[i])
+				ft_error("ERROR: Malloc failed for capacity columns.",
+						 lemin,
+						 __FILE__,
+						 __LINE__);
+		}
+		lemin->used = malloc(sizeof(int*) * lemin->nb_rooms);
+		if (!lemin->used)
+			ft_error(
+			  "ERROR: Malloc failed for used rows.", lemin, __FILE__, __LINE__);
+		for (int i = 0; i < lemin->nb_rooms; i++)
+		{
+			lemin->used[i] = ft_calloc(lemin->nb_rooms, sizeof(int));
+			if (!lemin->used[i])
+				ft_error("ERROR: Malloc failed for used columns.",
+						 lemin,
+						 __FILE__,
+						 __LINE__);
+		}
+	}
+
 	char** link_rooms_name = parse_link(line);
 
 	if (!link_rooms_name)
@@ -326,8 +304,8 @@ enum ParsingState process_parsing_links(t_lemin* lemin, char* line)
 		ft_error("ERROR: Invalid link definition.", lemin, __FILE__, __LINE__);
 	}
 
-	int room_parent_id = get_room_id_by_name(lemin, link_rooms_name[0]);
-	int room_child_id = get_room_id_by_name(lemin, link_rooms_name[1]);
+	int room_parent_id = get_room_id(lemin, link_rooms_name[0]);
+	int room_child_id = get_room_id(lemin, link_rooms_name[1]);
 	free_split(link_rooms_name);
 	if (room_parent_id == -1 || room_child_id == -1)
 	{
@@ -335,8 +313,11 @@ enum ParsingState process_parsing_links(t_lemin* lemin, char* line)
 		ft_error(
 		  "ERROR: Link references unknown room.", lemin, __FILE__, __LINE__);
 	}
-	integrate_link_to_rooms(lemin, room_parent_id, room_child_id);
-	integrate_link_to_rooms(lemin, room_child_id, room_parent_id);
+	integrate_link_rooms(lemin, room_parent_id, room_child_id);
+	integrate_link_rooms(lemin, room_child_id, room_parent_id);
+
+	lemin->capacity[room_parent_id][room_child_id] = 1;
+	lemin->capacity[room_child_id][room_parent_id] = 1;
 
 	return PARSING_LINKS;
 }
@@ -348,14 +329,10 @@ t_lemin* parse(int fd)
 	t_lemin* lemin = malloc(sizeof(t_lemin));
 	if (!lemin)
 		ft_error("ERROR: Malloc failed for lemin.", NULL, __FILE__, __LINE__);
-	lemin->nb_ants = 0;
-	lemin->nb_rooms = 0;
-	lemin->rooms_by_id = NULL;
+	ft_bzero(lemin, sizeof(t_lemin));
+
 	lemin->start_id = -1;
 	lemin->end_id = -1;
-	lemin->moves_steps = NULL;
-	lemin->ants = NULL;
-	lemin->nb_ants_who_left_start = 0;
 
 	enum RoomType next_room_type = ROOM_TYPE_UNKNOWN;
 
@@ -380,7 +357,7 @@ t_lemin* parse(int fd)
 		if (parsing_state == PARSING_ANTS)
 			parsing_state = process_parsing_ants(lemin, line);
 		else if (parsing_state == PARSING_ROOMS)
-			parsing_state = process_parsing_rooms(lemin, line, &next_room_type);
+			parsing_state = parsing_rooms(lemin, line, &next_room_type);
 
 		if (parsing_state == PARSING_LINKS)
 			parsing_state = process_parsing_links(lemin, line);
@@ -408,77 +385,4 @@ t_lemin* parse(int fd)
 	lemin->moves_steps = parse_moves(lemin, fd);
 
 	return lemin;
-}
-
-t_list* parse_moves(t_lemin* lemin, int fd)
-{
-	char* line = get_next_line_wnl(fd);
-	t_list* moves_steps = NULL;
-
-	int* ant_positions = malloc(sizeof(int) * lemin->nb_ants);
-	if (!ant_positions)
-		return (NULL);
-	for (int i = 0; i < lemin->nb_ants; i++)
-		ant_positions[i] = lemin->start_id;
-
-	while (line)
-	{
-		if (*line == '\0')
-		{
-			free(line);
-			line = get_next_line_wnl(fd);
-			continue;
-		}
-
-		char** move_parts = ft_split(line, ' ');
-		if (!move_parts)
-		{
-			free(line);
-			continue;
-		}
-
-		t_list* turn_moves = NULL;
-		int i = 0;
-		while (move_parts[i])
-		{
-			if (ft_strncmp(move_parts[i], "L", 1) == 0)
-			{
-				char* dash_pos = ft_strchr(move_parts[i], '-');
-				if (dash_pos)
-				{
-					*dash_pos = '\0';
-					int ant_id = ft_atoi(move_parts[i] + 1);
-					char* room_name = dash_pos + 1;
-					int room_id = get_room_id_by_name(lemin, room_name);
-
-					if (room_id != -1 && ant_id > 0 && ant_id <= lemin->nb_ants)
-					{
-						int from_id = ant_positions[ant_id - 1];
-						t_move* move =
-						  create_move(ant_id, from_id, room_id, room_name);
-						if (move)
-							ft_lstadd_back(&turn_moves, ft_lstnew(move));
-					}
-				}
-			}
-			i++;
-		}
-
-		t_list* current_move = turn_moves;
-		while (current_move)
-		{
-			t_move* move = (t_move*)current_move->content;
-			ant_positions[move->ant_id - 1] = move->to_room_id;
-			current_move = current_move->next;
-		}
-
-		free_split(move_parts);
-		if (turn_moves)
-			ft_lstadd_back(&moves_steps, ft_lstnew(turn_moves));
-		free(line);
-		line = get_next_line_wnl(fd);
-	}
-
-	free(ant_positions);
-	return (moves_steps);
 }

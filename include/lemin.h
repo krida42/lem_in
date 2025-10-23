@@ -74,6 +74,9 @@ typedef struct s_lemin
 	int start_id; // ID de ##start
 	int end_id;	  // ID de ##end
 
+	int** capacity;
+	int** used;
+
 	t_list* moves_steps;
 	int nb_ants_who_left_start;
 } t_lemin;
@@ -93,27 +96,27 @@ t_move* create_move(int ant_id,
 
 // parsing.c
 t_lemin* parse(int fd);
-bool is_str_positive_number(const char* str);
+bool is_str_pnumber(const char* str);
 bool is_room_name_valid(const char* name);
 bool is_comment(const char* line);
 bool is_start_command(const char* line);
 bool is_end_command(const char* line);
 bool is_room_definition(const char* line);
 t_room* parse_room(const char* line);
-bool is_room_name_already_used(t_lemin* lemin, const char* name);
+bool is_room_name(t_lemin* lemin, const char* name);
 void free_room(t_room* room);
-void integrate_room_to_lemin(t_lemin* lemin, t_room* room, char* line);
-enum ParsingState process_parsing_rooms(t_lemin* lemin,
-										char* line,
-										enum RoomType* next_room_type);
+void room_to_lemin(t_lemin* lemin, t_room* room, char* line);
+enum ParsingState parsing_rooms(t_lemin* lemin,
+								char* line,
+								enum RoomType* next_room_type);
 char** parse_link(const char* line);
 int parse_ants(const char* line);
 enum ParsingState process_parsing_ants(t_lemin* lemin, char* line);
 enum ParsingState process_parsing_links(t_lemin* lemin, char* line);
-int get_room_id_by_name(t_lemin* lemin, const char* name);
-void integrate_link_to_rooms(t_lemin* lemin,
-							 int parent_room_id,
-							 int child_room_id);
+int get_room_id(t_lemin* lemin, const char* name);
+void integrate_link_rooms(t_lemin* lemin,
+						  int parent_room_id,
+						  int child_room_id);
 
 // pathfinding_bfs.c
 t_path* bfs_find_path(t_lemin* lemin, int start_id, int end_id);
@@ -130,6 +133,8 @@ t_path* bfs_find_otherpath(t_lemin* lemin,
 						   int end_id,
 						   t_path** existing_paths,
 						   int nb_existing);
+bool bfs_find_apath(t_lemin* lemin, int start_id, int end_id);
+t_path** edmonds_karp(t_lemin* lemin);
 bool is_room_in_path(t_path* path, int room_id, bool exclude_endpoints);
 
 // simulation.c

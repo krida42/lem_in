@@ -123,7 +123,7 @@ void draw_links(t_lemin* lemin)
 	}
 }
 
-void draw_ant_based_on_move(t_lemin* lemin, t_move* move)
+void draw_ant_move(t_lemin* lemin, t_move* move)
 {
 	t_room* from_room = NULL;
 	t_room* to_room = NULL;
@@ -175,7 +175,7 @@ void draw_line(t_room* from, t_room* to, Color color)
 			   color);
 }
 
-int all_moves_completed(t_list* moves)
+int all_completed(t_list* moves)
 {
 	t_list* move_node = moves;
 	while (move_node)
@@ -188,7 +188,7 @@ int all_moves_completed(t_list* moves)
 	return 1;
 }
 
-void draw_nb_ants_at_start(t_lemin* lemin)
+void draw_start_ants(t_lemin* lemin)
 {
 	int const font_size = 20;
 	char* text = ft_itoa(lemin->nb_ants - lemin->nb_ants_who_left_start);
@@ -208,10 +208,10 @@ int draw_step(t_lemin* lemin, t_list* current_moves_step, float delta_time)
 	draw_links(lemin);
 	draw_rooms(lemin);
 	draw_stationary_ants(lemin);
-	draw_nb_ants_at_start(lemin);
+	draw_start_ants(lemin);
 	t_list* move_node = current_moves_step;
 
-	if (all_moves_completed(move_node))
+	if (all_completed(move_node))
 		return 1;
 
 	while (move_node)
@@ -222,7 +222,7 @@ int draw_step(t_lemin* lemin, t_list* current_moves_step, float delta_time)
 			move->time_interpolation += delta_time * 1;
 			if (move->time_interpolation > 1.0f)
 				move->time_interpolation = 1.0f;
-			draw_ant_based_on_move(lemin, move);
+			draw_ant_move(lemin, move);
 		}
 		move_node = move_node->next;
 	}
@@ -230,9 +230,7 @@ int draw_step(t_lemin* lemin, t_list* current_moves_step, float delta_time)
 	return 0;
 }
 
-int calculate_number_of_ants_who_left_start_in_current_step(
-  t_lemin* lemin,
-  t_list* current_moves_step)
+int nb_ants_left(t_lemin* lemin, t_list* current_moves_step)
 {
 	if (!lemin || !current_moves_step)
 		return 0;
@@ -258,13 +256,7 @@ int run_visualization(t_lemin* lemin)
 	const int screenWidth = 1920;
 	const int screenHeight = 1080;
 
-	if (!getenv("DISPLAY"))
-	{
-		ft_printf("No display available, cannot run visualizer\n");
-		return 0;
-	}
-
-	SetTraceLogLevel(LOG_NONE);
+	SetTraceLogLevel(LOG_ALL);
 	InitWindow(screenWidth, screenHeight, "LEMIN Visualization");
 
 	if (!IsWindowReady())
@@ -386,8 +378,7 @@ int run_visualization(t_lemin* lemin)
 			if (step_finished)
 			{
 				int ants_left_start_in_step =
-				  calculate_number_of_ants_who_left_start_in_current_step(
-					lemin, current_moves_step->content);
+				  nb_ants_left(lemin, current_moves_step->content);
 				lemin->nb_ants_who_left_start += ants_left_start_in_step;
 				current_moves_step = current_moves_step->next;
 				current_turn++;
@@ -400,7 +391,7 @@ int run_visualization(t_lemin* lemin)
 			draw_links(lemin);
 			draw_rooms(lemin);
 			draw_stationary_ants(lemin);
-			draw_nb_ants_at_start(lemin);
+			draw_start_ants(lemin);
 
 			int msg_width = 400;
 			int msg_height = 60;
@@ -410,7 +401,7 @@ int run_visualization(t_lemin* lemin)
 			  msg_x, msg_y, msg_width, msg_height, (Color){ 34, 139, 34, 220 });
 			DrawRectangleLines(msg_x, msg_y, msg_width, msg_height, DARKGREEN);
 			DrawText(
-			  "SIMULATION COMPLETE!", msg_x + 50, msg_y + 10, 20, RAYWHITE);
+			  "SIMULATION COMPLETE GG", msg_x + 50, msg_y + 10, 20, RAYWHITE);
 			DrawText(
 			  "Press 'R' to restart", msg_x + 100, msg_y + 35, 16, RAYWHITE);
 		}
