@@ -204,7 +204,8 @@ void simulate_ants(t_lemin* lemin)
 	t_path** paths = edmonds_karp(lemin);
 	if (!paths || !paths[0])
 	{
-		ft_printf("ERROR\n");
+		ft_error(
+		  "ERROR: No paths found for simulation.", lemin, __FILE__, __LINE__);
 		return;
 	}
 

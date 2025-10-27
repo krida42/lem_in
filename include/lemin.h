@@ -12,6 +12,9 @@
 #define ERROR -1
 #define SUCCESS 0
 
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
+
 enum RoomType
 {
 	ROOM_TYPE_UNKNOWN,
@@ -37,6 +40,9 @@ typedef struct s_room
 
 	bool visited;
 	int parent_id;
+
+	int old_x; // For visualization adjustments
+	int old_y; // For visualization adjustments
 } t_room;
 
 typedef struct s_path
@@ -97,6 +103,7 @@ t_move* create_move(int ant_id,
 // parsing.c
 t_lemin* parse(int fd);
 bool is_str_pnumber(const char* str);
+bool is_str_integer(const char* str);
 bool is_room_name_valid(const char* name);
 bool is_comment(const char* line);
 bool is_start_command(const char* line);

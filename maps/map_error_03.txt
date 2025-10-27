@@ -1,0 +1,6 @@
+2
+##start
+start 0 0
+##end
+end 5 5
+start-non_existent_room

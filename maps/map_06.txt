@@ -1,0 +1,18 @@
+15
+##start
+start 0 5
+A 4 3
+B 4 7
+shared 8 5
+C 12 3
+D 12 7
+##end
+end 16 5
+start-A
+start-B
+A-shared
+B-shared
+shared-C
+shared-D
+C-end
+D-end

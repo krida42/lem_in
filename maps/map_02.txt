@@ -1,0 +1,15 @@
+4
+##start
+start 0 5
+# Chemin court
+A 5 3
+# Chemin long
+B 5 7
+C 10 7
+##end
+end 15 5
+start-A
+A-end
+start-B
+B-C
+C-end

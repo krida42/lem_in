@@ -11,29 +11,31 @@
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
+#define GET_NEXT_LINE_H
 
-# include <unistd.h>
-# include <stdlib.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-# define BUFFER_SIZE 32
+#define BUFFER_SIZE 32
 
 typedef struct s_stream
 {
-	int				index;
-	int				fd;
-	char			buf[BUFFER_SIZE + 1];
-	struct s_stream	*next;
-}	t_stream;
+	int index;
+	int fd;
+	char buf[BUFFER_SIZE + 1];
+	struct s_stream* next;
+} t_stream;
 
-char		*get_next_line(int fd);
-t_stream	*gnl_newstream(int fd);
-void		gnl_printstream(t_stream *stream_lst);
-t_stream	*gnl_recover_fd_stream(t_stream **stream_lst, int fd);
-int			gnl_recover_line(t_stream *stream, char **line);
-int			gnl_strchri(char *s, unsigned char c);
-char		*gnl_strjoin(char *s1, char *s2);
-int			gnl_read_stream(t_stream *stream);
-void		*gnl_free_line(char *line);
-void		gnl_clear_stream(t_stream **stream_lst, t_stream *stream);
+char* get_next_line(int fd);
+t_stream* gnl_newstream(int fd);
+void gnl_printstream(t_stream* stream_lst);
+t_stream* gnl_recover_fd_stream(t_stream** stream_lst, int fd);
+int gnl_recover_line(t_stream* stream, char** line);
+int gnl_strchri(char* s, unsigned char c);
+char* gnl_strjoin(char* s1, char* s2);
+int gnl_read_stream(t_stream* stream);
+void* gnl_free_line(char* line);
+void gnl_clear_stream(t_stream** stream_lst, t_stream* stream);
+void gnl_free_all_streams(void);
+
 #endif

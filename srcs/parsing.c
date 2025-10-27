@@ -13,6 +13,21 @@ bool is_str_pnumber(const char* str)
 	return true;
 }
 
+bool is_str_integer(const char* str)
+{
+	if (!str || *str == '\0')
+		return false;
+	if (*str == '-')
+		str++;
+	while (*str)
+	{
+		if (*str < '0' || *str > '9')
+			return false;
+		str++;
+	}
+	return true;
+}
+
 bool is_room_name_valid(const char* name)
 {
 	if (!name || *name == '\0')
@@ -52,6 +67,9 @@ bool is_room_definition(const char* line)
 		return false;
 	i++;
 
+	// x coordinate: optional '-', then digits
+	if (line[i] == '-')
+		i++;
 	if (!ft_isdigit(line[i]))
 		return false;
 	while (line[i] && ft_isdigit(line[i]))
@@ -60,6 +78,9 @@ bool is_room_definition(const char* line)
 		return false;
 	i++;
 
+	// y coordinate: optional '-', then digits
+	if (line[i] == '-')
+		i++;
 	if (!ft_isdigit(line[i]))
 		return false;
 	while (line[i] && ft_isdigit(line[i]))
@@ -78,8 +99,8 @@ t_room* parse_room(const char* line)
 		free_split(parts);
 		return NULL;
 	}
-	if (!is_room_name_valid(parts[0]) || !is_str_pnumber(parts[1]) ||
-		!is_str_pnumber(parts[2]))
+	if (!is_room_name_valid(parts[0]) || !is_str_integer(parts[1]) ||
+		!is_str_integer(parts[2]))
 	{
 		free_split(parts);
 		return NULL;
@@ -94,6 +115,8 @@ t_room* parse_room(const char* line)
 	room->name = ft_strdup(parts[0]);
 	room->x = ft_atoi(parts[1]);
 	room->y = ft_atoi(parts[2]);
+	room->old_x = room->x;
+	room->old_y = room->y;
 
 	room->id = -1;
 	room->links = NULL;
@@ -337,6 +360,8 @@ t_lemin* parse(int fd)
 	enum RoomType next_room_type = ROOM_TYPE_UNKNOWN;
 
 	char* line = get_next_line_wnl(fd);
+	if (!line)
+		ft_error("ERROR: Empty input.", lemin, __FILE__, __LINE__);
 
 	while (line)
 	{
@@ -367,17 +392,23 @@ t_lemin* parse(int fd)
 	}
 
 	if (lemin->start_id == -1 || lemin->end_id == -1)
+	{
+		// free(line);
 		ft_error("ERROR: Map must have a start and an end room.",
 				 lemin,
 				 __FILE__,
 				 __LINE__);
+	}
 
 	t_path* initial_path = bfs_find_path(lemin, lemin->start_id, lemin->end_id);
 	if (!initial_path)
+	{
+		// free(line);
 		ft_error("ERROR: No path found between start and end.",
 				 lemin,
 				 __FILE__,
 				 __LINE__);
+	}
 	free_path(initial_path);
 
 	reset_room_states(lemin);

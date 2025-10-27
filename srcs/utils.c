@@ -1,4 +1,5 @@
 #include "../include/lemin.h"
+#include <unistd.h>
 
 int ft_strcmp(const char* s1, const char* s2)
 {
@@ -250,13 +251,14 @@ void ft_free_lemin(t_lemin* lemin)
 
 void ft_error(char* msg, t_lemin* lemin, const char* file, int line)
 {
-	(void)msg;
-	(void)file;
-	(void)line;
+	// (void)msg;
+	// (void)file;
+	// (void)line;
 
-	ft_putendl_fd("ERROR", 1);
+	ft_printf("%s (at %s:%d)\n", msg, file, line);
 
 	if (lemin)
 		ft_free_lemin(lemin);
+	gnl_free_all_streams();
 	exit(EXIT_FAILURE);
 }

@@ -12,9 +12,10 @@
 
 #include "../include/get_next_line.h"
 
+static t_stream* stream_lst = NULL;
+
 char* get_next_line(int fd)
 {
-	static t_stream* stream_lst = NULL;
 	t_stream* stream;
 	char* line;
 	int ret_recover_line;
@@ -84,3 +85,14 @@ void gnl_clear_stream(t_stream** stream_lst, t_stream* stream)
 		}
 	}
 }
+
+void gnl_free_all_streams(void)
+{
+	t_stream* cur = stream_lst;
+	while (cur)
+	{
+		t_stream* next = cur->next;
+		free(cur);
+		cur = next;
+	}
+	stream_lst = NULL;}

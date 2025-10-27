@@ -1,0 +1,9 @@
+4
+##start
+start 0 0
+A 5 5
+A 10 10
+##end
+end 15 15
+start-A
+A-end

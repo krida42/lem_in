@@ -1,0 +1,21 @@
+8
+##start
+start 0 1
+# Entrées multiples
+in1 1 5
+in2 1 10
+# Goulot d'étranglement
+bottleneck 2 1
+# Sorties multiples
+out1 3 5
+out2 3 10
+##end
+end 4 1
+start-in1
+start-in2
+in1-bottleneck
+in2-bottleneck
+bottleneck-out1
+bottleneck-out2
+out1-end
+out2-end

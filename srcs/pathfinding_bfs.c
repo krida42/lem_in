@@ -448,7 +448,6 @@ t_path** edmonds_karp(t_lemin* lemin)
 			int prev = lemin->rooms_by_id[current]->parent_id;
 
 			lemin->capacity[prev][current] = 0;
-
 			lemin->capacity[current][prev] = 1;
 
 			current = prev;

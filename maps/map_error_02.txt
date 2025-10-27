@@ -1,0 +1,5 @@
+3
+room1 0 0
+##end
+end 10 10
+room1-end

@@ -1,0 +1,19 @@
+20
+##start
+start 0 10
+# Chemin court (longueur 3)
+A1 10 5
+A2 20 5
+# Chemin plus long (longueur 4)
+B1 10 15
+B2 20 15
+B3 30 15
+##end
+end 40 10
+start-A1
+A1-A2
+A2-end
+start-B1
+B1-B2
+B2-B3
+B3-end

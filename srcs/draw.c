@@ -1,16 +1,22 @@
 #include "../include/lemin.h"
 #include "../libs/raylib/src/raylib.h"
 #include <math.h>
+#include <stdio.h>
 
-#define CIRCLE_RADIUS 50
+float room_margin = 20;
+
+int total_offset_x = SCREEN_WIDTH / 4;
+int total_offset_y = SCREEN_HEIGHT / 4;
+int room_radius = 15;
+int ant_radius = 10;
 
 void apply_offset(t_lemin* lemin, int offset_x, int offset_y, int margin)
 {
 	for (int i = 0; i < lemin->nb_rooms; i++)
 	{
 		t_room* room = lemin->rooms_by_id[i];
-		room->x = room->x * margin + offset_x;
-		room->y = room->y * margin + offset_y;
+		room->x = room->old_x * margin + offset_x;
+		room->y = room->old_y * margin + offset_y;
 	}
 }
 
@@ -35,7 +41,7 @@ void apply_clamping(t_lemin* lemin,
 
 void draw_rooms(t_lemin* lemin)
 {
-	int const circle_radius = CIRCLE_RADIUS;
+	// int const circle_radius = CIRCLE_RADIUS;
 	int const font_size = 20;
 
 	for (int i = 0; i < lemin->nb_rooms; i++)
@@ -51,15 +57,14 @@ void draw_rooms(t_lemin* lemin)
 		else if (room->id == lemin->end_id)
 			room_color = VIOLET; // Purple for end
 
-		DrawCircle(room_x, room_y, circle_radius, room_color);
-		DrawCircleLines(room_x, room_y, circle_radius, DARKBROWN); // Outline
+		DrawCircle(room_x, room_y, room_radius, room_color);
+		DrawCircleLines(room_x, room_y, room_radius, DARKBROWN); // Outline
 		DrawText(room->name, room_x - 10, room_y - 25, font_size, BLACK);
 	}
 }
 
 void draw_ant_at_position(int ant_id, float x, float y, Color color)
 {
-	int const ant_radius = 18;
 	int const font_size = 15;
 
 	DrawCircle((int)x, (int)y, ant_radius, color);
@@ -253,8 +258,8 @@ int nb_ants_left(t_lemin* lemin, t_list* current_moves_step)
 
 int run_visualization(t_lemin* lemin)
 {
-	const int screenWidth = 1920;
-	const int screenHeight = 1080;
+	const int screenWidth = SCREEN_WIDTH;
+	const int screenHeight = SCREEN_HEIGHT;
 
 	SetTraceLogLevel(LOG_ALL);
 	InitWindow(screenWidth, screenHeight, "LEMIN Visualization");
@@ -272,8 +277,10 @@ int run_visualization(t_lemin* lemin)
 		CloseWindow();
 		return (1);
 	}
-	apply_offset(lemin, screenWidth / 4, screenHeight / 4, 100);
-	apply_clamping(lemin, screenWidth, screenHeight, 100);
+	// apply_offset(lemin, screenWidth / 4 * 0, screenHeight / 4 * 0,
+	// room_margin);
+	apply_offset(lemin, total_offset_x, total_offset_y, room_margin);
+	apply_clamping(lemin, screenWidth, screenHeight, room_margin);
 
 	bool simulation_finished = false;
 	bool paused = false;
@@ -283,9 +290,7 @@ int run_visualization(t_lemin* lemin)
 	while (!WindowShouldClose())
 	{
 		if (IsKeyPressed(KEY_SPACE))
-		{
 			paused = !paused;
-		}
 
 		if (IsKeyPressed(KEY_RIGHT))
 		{
@@ -320,6 +325,34 @@ int run_visualization(t_lemin* lemin)
 			simulation_finished = false;
 			current_turn = 0;
 			paused = false;
+		}
+
+		if (IsKeyDown(KEY_M))
+		{
+			float step = .1f;
+			step += room_margin * 0.05f;
+			room_margin += IsKeyDown(KEY_LEFT_SHIFT) ? -step : step;
+			if (room_margin < 1.0f)
+				room_margin = 1.0f;
+		}
+		if (IsKeyDown(KEY_X))
+			total_offset_x += IsKeyDown(KEY_LEFT_SHIFT) ? -10 : 10;
+		if (IsKeyDown(KEY_Y))
+			total_offset_y += IsKeyDown(KEY_LEFT_SHIFT) ? -10 : 10;
+		if (IsKeyDown(KEY_A))
+			ant_radius += IsKeyDown(KEY_LEFT_SHIFT) ? -1 : 1;
+		if (IsKeyDown(KEY_O))
+			room_radius += IsKeyDown(KEY_LEFT_SHIFT) ? -1 : 1;
+
+		if (IsKeyDown(KEY_M) || IsKeyDown(KEY_X) || IsKeyDown(KEY_Y) ||
+			IsKeyDown(KEY_S))
+		{
+			apply_offset(lemin, total_offset_x, total_offset_y, room_margin);
+			apply_clamping(lemin, screenWidth, screenHeight, room_margin);
+			printf("New room margin: %f, offset_x: %d, offset_y: %d\n",
+				   room_margin,
+				   total_offset_x,
+				   total_offset_y);
 		}
 
 		BeginDrawing();

@@ -1,0 +1,11 @@
+# Nombre de fourmis
+2
+##start
+hall 1 2
+salle_de_bain 2 4
+##end
+sortie 3 6
+# Maintenant les liens
+hall-salle_de_bain
+salle_de_bain-sortie
+# Fin de la carte
