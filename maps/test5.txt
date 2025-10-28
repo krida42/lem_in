@@ -1,0 +1,12 @@
+2
+##start
+start 0 2
+A 5 0
+B 5 4
+##end
+end 10 2
+start-A
+start-B
+A-B
+A-end
+B-end

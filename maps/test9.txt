@@ -1,0 +1,38 @@
+15
+##start
+start 5 0
+##end
+end 5 12
+p1r1 2 2
+p1r2 2 4
+p1r3 2 6
+p1r4 2 8
+p1r5 2 10
+p2r1 5 2
+p2r2 5 4
+p2r3 5 6
+p2r4 5 8
+p2r5 5 10
+p3r1 8 2
+p3r2 8 4
+p3r3 8 6
+p3r4 8 8
+p3r5 8 10
+start-p1r1
+start-p2r1
+start-p3r1
+p1r1-p1r2
+p1r2-p1r3
+p1r3-p1r4
+p1r4-p1r5
+p2r1-p2r2
+p2r2-p2r3
+p2r3-p2r4
+p2r4-p2r5
+p3r1-p3r2
+p3r2-p3r3
+p3r3-p3r4
+p3r4-p3r5
+p1r5-end
+p2r5-end
+p3r5-end

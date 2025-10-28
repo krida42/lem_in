@@ -1,235 +1,216 @@
-#include "../include/lemin.h"
-
-int distribution_cost(int* ants_per_path, t_path** paths, int nb_paths)
-{
-	int max_turns = 0;
-
-	for (int i = 0; i < nb_paths; i++)
-	{
-		if (!paths[i])
-			continue;
-
-		int turns = ants_per_path[i] + paths[i]->len - 1;
-
-		if (turns > max_turns)
-			max_turns = turns;
-	}
-
-	return (max_turns);
-}
+#include "lemin.h"
 
 void optimize_ants(t_lemin* lemin, t_path** paths, int nb_paths)
 {
-	if (!lemin || !paths || nb_paths <= 0)
+	int best_k = 1;
+	int min_turns = INT_MAX;
+	for (int k = 1; k <= nb_paths; k++)
+	{
+		int sum_len = 0;
+		for (int i = 0; i < k; i++)
+		{
+			sum_len += paths[i]->len;
+		}
+		int turns =
+		  (lemin->nb_ants + sum_len - 1) / k; // ceil((nb_ants + sum_len) / k)
+		if (turns < min_turns)
+		{
+			min_turns = turns;
+			best_k = k;
+		}
+	}
+	int* ant_counts = calloc(best_k, sizeof(int));
+	if (!ant_counts)
 		return;
-
-	lemin->ants = malloc(sizeof(t_ant*) * lemin->nb_ants);
-	if (!lemin->ants)
-		ft_error(
-		  "ERROR: Malloc failed for ants array.", lemin, __FILE__, __LINE__);
-
-	int* ants_per_paths = malloc(sizeof(int) * nb_paths);
-	if (!ants_per_paths)
-		ft_error(
-		  "ERROR: Malloc failed for ants_per_path.", lemin, __FILE__, __LINE__);
-
-	for (int i = 0; i < nb_paths; i++)
-		ants_per_paths[i] = 0;
-
 	for (int ant = 0; ant < lemin->nb_ants; ant++)
 	{
-		int best_path = 0;
-		int min_turns = INT_MAX;
-
-		for (int i = 0; i < nb_paths; i++)
+		int best_p = 0;
+		int min_cost = paths[0]->len + ant_counts[0];
+		for (int p = 1; p < best_k; p++)
 		{
-			if (!paths[i])
-				continue;
-
-			ants_per_paths[i]++;
-			int turns = distribution_cost(ants_per_paths, paths, nb_paths);
-
-			if (turns < min_turns)
+			int cost = paths[p]->len + ant_counts[p];
+			if (cost < min_cost)
 			{
-				min_turns = turns;
-				best_path = i;
+				min_cost = cost;
+				best_p = p;
 			}
-
-			ants_per_paths[i]--;
 		}
-
-		ants_per_paths[best_path]++;
+		ant_counts[best_p]++;
 	}
-
-	Color path_colors[] = { ORANGE, RED,   GOLD, PINK,	  BLUE,
-							PURPLE, GREEN, LIME, SKYBLUE, MAROON };
-	int num_colors = sizeof(path_colors) / sizeof(path_colors[0]);
-
-	int ant_index = 0;
-	for (int path_idx = 0; path_idx < nb_paths; path_idx++)
+	Color path_colors[10] = { RED,	ORANGE, BLUE,	GREEN,	 PURPLE,
+							  GOLD, LIME,	VIOLET, SKYBLUE, PINK };
+	lemin->ants = malloc(sizeof(t_ant*) * lemin->nb_ants);
+	if (!lemin->ants)
 	{
-		for (int i = 0; i < ants_per_paths[path_idx]; i++)
+		free(ant_counts);
+		return;
+	}
+	int ant_index = 0;
+	for (int p = 0; p < best_k; p++)
+	{
+		for (int i = 0; i < ant_counts[p]; i++)
 		{
-			lemin->ants[ant_index] = malloc(sizeof(t_ant));
-			if (!lemin->ants[ant_index])
-				ft_error(
-				  "ERROR: Malloc failed for ant.", lemin, __FILE__, __LINE__);
-
-			lemin->ants[ant_index]->id = ant_index + 1;
-			lemin->ants[ant_index]->current_room_id = lemin->start_id;
-			lemin->ants[ant_index]->path_position = 0;
-			lemin->ants[ant_index]->path = paths[path_idx];
-			lemin->ants[ant_index]->color = path_colors[path_idx % num_colors];
-
+			t_ant* ant = malloc(sizeof(t_ant));
+			if (!ant)
+				continue;
+			ant->id = ant_index + 1;
+			ant->current_room_id = lemin->start_id;
+			ant->path = paths[p];
+			ant->path_position = 0;
+			ant->color = path_colors[p % 10];
+			lemin->ants[ant_index] = ant;
 			ant_index++;
 		}
 	}
-
-	free(ants_per_paths);
-}
-
-bool finish_ants(t_lemin* lemin)
-{
-	if (!lemin || !lemin->ants)
-		return (true);
-
-	for (int i = 0; i < lemin->nb_ants; i++)
-		if (lemin->ants[i]->current_room_id != lemin->end_id)
-			return (false);
-	return (true);
-}
-
-bool is_room_occupied(t_lemin* lemin, int room_id, int exclude_ant_id)
-{
-	if (room_id == lemin->start_id || room_id == lemin->end_id)
-		return (false);
-
-	for (int i = 0; i < lemin->nb_ants; i++)
-	{
-		if (lemin->ants[i]->id != exclude_ant_id &&
-			lemin->ants[i]->current_room_id == room_id)
-			return (true);
-	}
-	return (false);
-}
-
-t_list* move_ants_one_turn(t_lemin* lemin)
-{
-	t_list* moves = NULL;
-
-	if (!lemin || !lemin->ants)
-		return (NULL);
-
-	bool* target_occupied = calloc(lemin->nb_rooms, sizeof(bool));
-	if (!target_occupied)
-		ft_error("ERROR: Malloc failed for target_occupied.",
-				 lemin,
-				 __FILE__,
-				 __LINE__);
-
-	for (int i = lemin->nb_ants - 1; i >= 0; i--)
-	{
-		t_ant* ant = lemin->ants[i];
-
-		if (ant->current_room_id == lemin->end_id)
-			continue;
-
-		int next_position = ant->path_position + 1;
-		int next_room_id = get_room_id_from_path(ant->path, next_position);
-
-		if (next_room_id == -1)
-			continue;
-
-		if (!target_occupied[next_room_id] &&
-			!is_room_occupied(lemin, next_room_id, ant->id))
-		{
-			t_move* move = create_move(ant->id,
-									   ant->current_room_id,
-									   next_room_id,
-									   lemin->rooms_by_id[next_room_id]->name);
-			if (move)
-			{
-				ft_lstadd_back(&moves, ft_lstnew(move));
-				target_occupied[next_room_id] = true;
-			}
-		}
-	}
-
-	free(target_occupied);
-
-	t_list* move_node = moves;
-	while (move_node)
-	{
-		t_move* move = (t_move*)move_node->content;
-		if (move)
-		{
-			t_ant* ant = lemin->ants[move->ant_id - 1];
-			ant->current_room_id = move->to_room_id;
-			ant->path_position = ant->path_position + 1;
-		}
-		move_node = move_node->next;
-	}
-
-	return (moves);
-}
-
-void print_moves(t_list* moves)
-{
-	if (!moves)
-		return;
-
-	t_list* current = moves;
-	bool first = true;
-
-	while (current)
-	{
-		t_move* move = (t_move*)current->content;
-
-		if (!first)
-			ft_printf(" ");
-
-		ft_printf("L%d-%s", move->ant_id, move->to_room_name);
-
-		first = false;
-		current = current->next;
-	}
-	ft_printf("\n");
+	free(ant_counts);
 }
 
 void simulate_ants(t_lemin* lemin)
 {
-	if (!lemin)
+	int* room_occupants = malloc(sizeof(int) * lemin->nb_rooms);
+	if (!room_occupants)
 		return;
-
-	t_path** paths = edmonds_karp(lemin);
-	if (!paths || !paths[0])
+	for (int i = 0; i < lemin->nb_rooms; i++)
+		room_occupants[i] = -1;
+	int ants_at_end = 0;
+	while (ants_at_end < lemin->nb_ants)
 	{
-		ft_error(
-		  "ERROR: No paths found for simulation.", lemin, __FILE__, __LINE__);
-		return;
-	}
-
-	int nb_paths = count_valid_paths(paths, lemin->nb_rooms);
-
-	optimize_ants(lemin, paths, nb_paths);
-
-	while (!finish_ants(lemin))
-	{
-		t_list* moves = move_ants_one_turn(lemin);
-
-		if (moves)
+		t_list* moves_this_turn = NULL;
+		t_ant* sorted_ants[lemin->nb_ants];
+		for (int i = 0; i < lemin->nb_ants; i++)
+			sorted_ants[i] = lemin->ants[i];
+		for (int i = 0; i < lemin->nb_ants - 1; i++)
 		{
-			print_moves(moves);
-			t_list* new_node = ft_lstnew(moves);
+			for (int j = 0; j < lemin->nb_ants - i - 1; j++)
+			{
+				if (sorted_ants[j]->path_position <
+					sorted_ants[j + 1]->path_position)
+				{
+					t_ant* temp = sorted_ants[j];
+					sorted_ants[j] = sorted_ants[j + 1];
+					sorted_ants[j + 1] = temp;
+				}
+			}
+		}
+		for (int i = 0; i < lemin->nb_ants; i++)
+		{
+			t_ant* ant = sorted_ants[i];
+			if (ant->current_room_id != lemin->start_id &&
+				ant->current_room_id != lemin->end_id)
+			{
+				t_list* temp = ant->path->room_ids;
+				for (int j = 0; j <= ant->path_position; j++)
+					temp = temp->next;
+				int next_room_id = *(int*)temp->content;
+				if (next_room_id == lemin->end_id ||
+					room_occupants[next_room_id] == -1)
+				{
+					room_occupants[ant->current_room_id] = -1;
 
-			ft_lstadd_back(&lemin->moves_steps, new_node);
+					ant->current_room_id = next_room_id;
+					ant->path_position++;
+					if (next_room_id != lemin->end_id)
+						room_occupants[next_room_id] = ant->id;
+					else
+						ants_at_end++;
+
+					char* id_str = ft_itoa(ant->id);
+					char* temp1 = ft_strjoin("L", id_str);
+					free(id_str);
+					char* temp2 = ft_strjoin(temp1, "-");
+					free(temp1);
+					char* move_str =
+					  ft_strjoin(temp2, lemin->rooms_by_id[next_room_id]->name);
+					free(temp2);
+					t_list* node = ft_lstnew(move_str);
+					if (!node)
+						free(move_str);
+					else
+						ft_lstadd_back(&moves_this_turn, node);
+				}
+			}
+		}
+		int nb_paths = 0;
+		t_path* used_paths[lemin->nb_ants];
+		for (int i = 0; i < lemin->nb_ants; i++)
+		{
+			t_path* p = lemin->ants[i]->path;
+			bool found = false;
+			for (int j = 0; j < nb_paths; j++)
+			{
+				if (used_paths[j] == p)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				used_paths[nb_paths++] = p;
+		}
+		bool* path_has_launched = calloc(nb_paths, sizeof(bool));
+		if (!path_has_launched)
+		{
+			free(room_occupants);
+			return;
+		}
+		for (int i = 0; i < lemin->nb_ants; i++)
+		{
+			t_ant* ant = lemin->ants[i];
+			if (ant->current_room_id == lemin->start_id)
+			{
+				int path_index = -1;
+				for (int j = 0; j < nb_paths; j++)
+				{
+					if (used_paths[j] == ant->path)
+					{
+						path_index = j;
+						break;
+					}
+				}
+				if (path_index == -1 || path_has_launched[path_index])
+					continue;
+
+				t_list* temp = ant->path->room_ids;
+				temp = temp->next;
+				int first_step_id = *(int*)temp->content;
+
+				if (room_occupants[first_step_id] == -1)
+				{
+					ant->current_room_id = first_step_id;
+					ant->path_position = 1;
+					room_occupants[first_step_id] = ant->id;
+
+					char* id_str = ft_itoa(ant->id);
+					char* temp1 = ft_strjoin("L", id_str);
+					free(id_str);
+					char* temp2 = ft_strjoin(temp1, "-");
+					free(temp1);
+					char* move_str = ft_strjoin(
+					  temp2, lemin->rooms_by_id[first_step_id]->name);
+					free(temp2);
+					t_list* node = ft_lstnew(move_str);
+					if (!node)
+						free(move_str);
+					else
+						ft_lstadd_back(&moves_this_turn, node);
+					path_has_launched[path_index] = true;
+				}
+			}
+		}
+		free(path_has_launched);
+		if (moves_this_turn)
+		{
+			t_list* current = moves_this_turn;
+			while (current)
+			{
+				ft_putstr_fd((char*)current->content, 1);
+				if (current->next)
+					ft_putstr_fd(" ", 1);
+				current = current->next;
+			}
+			ft_putstr_fd("\n", 1);
+			ft_lstclear(&moves_this_turn, free);
 		}
 	}
-
-	if (paths)
-	{
-		for (int i = 0; paths[i]; i++)
-			free_path(paths[i]);
-		free(paths);
-	}
+	free(room_occupants);
 }

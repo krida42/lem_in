@@ -256,6 +256,49 @@ int nb_ants_left(t_lemin* lemin, t_list* current_moves_step)
 	return count;
 }
 
+void auto_center_and_zoom(t_lemin* lemin)
+{
+	if (!lemin || lemin->nb_rooms <= 0)
+		return;
+
+	int min_x = INT_MAX, max_x = INT_MIN;
+	int min_y = INT_MAX, max_y = INT_MIN;
+
+	for (int i = 0; i < lemin->nb_rooms; i++)
+	{
+		t_room* room = lemin->rooms_by_id[i];
+		if (room->old_x < min_x)
+			min_x = room->old_x;
+		if (room->old_x > max_x)
+			max_x = room->old_x;
+		if (room->old_y < min_y)
+			min_y = room->old_y;
+		if (room->old_y > max_y)
+			max_y = room->old_y;
+	}
+
+	float map_width = max_x - min_x;
+	float map_height = max_y - min_y;
+
+	if (map_width <= 0)
+		map_width = 1;
+	if (map_height <= 0)
+		map_height = 1;
+
+	float scale = fmin((SCREEN_WIDTH * 0.9f) / map_width,
+					   (SCREEN_HEIGHT * 0.9f) / map_height);
+
+	float offset_x = (SCREEN_WIDTH - map_width * scale) / 2 - min_x * scale;
+	float offset_y = (SCREEN_HEIGHT - map_height * scale) / 2 - min_y * scale;
+
+	for (int i = 0; i < lemin->nb_rooms; i++)
+	{
+		t_room* room = lemin->rooms_by_id[i];
+		room->x = room->old_x * scale + offset_x;
+		room->y = room->old_y * scale + offset_y;
+	}
+}
+
 int run_visualization(t_lemin* lemin)
 {
 	const int screenWidth = SCREEN_WIDTH;
@@ -277,10 +320,8 @@ int run_visualization(t_lemin* lemin)
 		CloseWindow();
 		return (1);
 	}
-	// apply_offset(lemin, screenWidth / 4 * 0, screenHeight / 4 * 0,
-	// room_margin);
-	apply_offset(lemin, total_offset_x, total_offset_y, room_margin);
-	apply_clamping(lemin, screenWidth, screenHeight, room_margin);
+	auto_center_and_zoom(lemin);
+	auto_center_and_zoom(lemin);
 
 	bool simulation_finished = false;
 	bool paused = false;

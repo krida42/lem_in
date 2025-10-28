@@ -1,4 +1,5 @@
 #include "../include/lemin.h"
+#include <stdio.h>
 
 bool is_str_pnumber(const char* str)
 {
@@ -122,6 +123,7 @@ t_room* parse_room(const char* line)
 	room->links = NULL;
 	room->visited = false;
 	room->parent_id = -1;
+	room->is_on_path = false;
 	free_split(parts);
 	return room;
 }

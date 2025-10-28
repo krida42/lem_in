@@ -1,0 +1,12 @@
+4
+##start
+start 0 5
+A 5 5
+B 10 5
+C_dead 5 0
+##end
+end 15 5
+start-A
+A-B
+B-end
+A-C_dead

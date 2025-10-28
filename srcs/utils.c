@@ -262,3 +262,13 @@ void ft_error(char* msg, t_lemin* lemin, const char* file, int line)
 	gnl_free_all_streams();
 	exit(EXIT_FAILURE);
 }
+
+int count_valid_paths(t_path** paths, int max_paths)
+{
+	if (!paths)
+		return 0;
+	int count = 0;
+	while (count < max_paths && paths[count] != NULL)
+		count++;
+	return count;
+}

@@ -1,9 +1,0 @@
-5
-##start
-start 0 0
-A 1 1
-##end
-end 10 10
-B 9 9
-start-A
-B-end

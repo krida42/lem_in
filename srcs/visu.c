@@ -1,5 +1,7 @@
 #include "../include/lemin.h"
 
+void init_ants(t_lemin* lemin);
+
 int main(int argc, char** argv)
 {
 	if (argc > 1)
@@ -77,26 +79,11 @@ int main(int argc, char** argv)
 
 	reset_room_states(lemin);
 
-	t_path** paths = find_multiple_paths(lemin, lemin->nb_rooms);
-	if (!paths || !paths[0])
-	{
-		ft_free_lemin(lemin);
-		ft_printf("ERROR: No path found between start and end\n");
-		return (1);
-	}
-	int nb_paths = count_valid_paths(paths, lemin->nb_rooms);
-	optimize_ants(lemin, paths, nb_paths);
+	init_ants(lemin);
 
 	lemin->moves_steps = parse_moves(lemin, 0);
 
 	run_visualization(lemin);
-
-	if (paths)
-	{
-		for (int i = 0; paths[i]; i++)
-			free_path(paths[i]);
-		free(paths);
-	}
 
 	if (lemin)
 		ft_free_lemin(lemin);

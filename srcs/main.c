@@ -59,7 +59,20 @@ int main(int argc, const char* argv[])
 
 	ft_printf("\n");
 
+	t_path** paths = find_multiple_paths(lemin, lemin->nb_rooms);
+	if (!paths || !paths[0])
+	{
+		ft_free_lemin(lemin);
+		ft_error("ERROR: No paths found.", NULL, __FILE__, __LINE__);
+	}
+	int nb_paths = count_valid_paths(paths, lemin->nb_rooms);
+	optimize_ants(lemin, paths, nb_paths);
+
 	simulate_ants(lemin);
+
+	for (int i = 0; paths[i] != NULL; i++)
+		free_path(paths[i]);
+	free(paths);
 
 	if (lemin)
 	{

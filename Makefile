@@ -4,7 +4,7 @@ VISU = visu
 CXX = cc
 CXXFLAGS = -Wall -Wextra -Werror -ggdb3
 
-INC = -I includes/ -I $(LIBFT_DIR)/include -I $(RAYLIB_DIR)
+INC = -I include/ -I $(LIBFT_DIR)/include -I $(RAYLIB_DIR)
 INC_BONUS = -I $(RAYLIB_DIR)
 
 LIBS_DIR = ./libs
@@ -65,13 +65,4 @@ re: fclean all
 valgrind: $(NAME)
 	valgrind --leak-check=full --show-leak-kinds=all -q ./$(NAME)
 
-MAP ?= maps/default.map
-run: $(NAME)
-	@if [ -f $(MAP) ]; then \
-		./$(NAME) < $(MAP); \
-	else \
-		echo "Map file $(MAP) not found. Running without input..."; \
-		./$(NAME); \
-	fi
-
-.PHONY: all bonus clean fclean re valgrind run
+.PHONY: all bonus clean fclean re valgrind

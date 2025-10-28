@@ -1,0 +1,18 @@
+5
+##start
+alpha 0 0
+##end
+omega 12 0
+beta 2 1
+gamma 4 2
+delta 6 1
+epsilon 8 2
+zeta 10 1
+alpha-beta
+alpha-gamma
+beta-delta
+gamma-delta
+delta-epsilon
+delta-zeta
+epsilon-omega
+zeta-omega
