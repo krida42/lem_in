@@ -1,4 +1,5 @@
 #include "../include/lemin.h"
+#include <stdio.h>
 #include <unistd.h>
 
 int ft_strcmp(const char* s1, const char* s2)

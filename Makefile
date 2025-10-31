@@ -1,68 +1,85 @@
-NAME = lem-in
-VISU = visu
+NAME := lem-in
+VISU := visu
 
-CXX = cc
-CXXFLAGS = -Wall -Wextra -Werror -ggdb3
+SRCS_FILES := parsing.c pathfinding_bfs.c simulation.c utils.c
+VISU_FILES := visu.c draw.c
 
-INC = -I include/ -I $(LIBFT_DIR)/include -I $(RAYLIB_DIR)
-INC_BONUS = -I $(RAYLIB_DIR)
+SRCS_DIR := srcs/
+OBJS_DIR := objs/
+LIBS_DIR := libs/
 
-LIBS_DIR = ./libs
+LIBFT_DIR := $(LIBS_DIR)libft/
+LIBFT_A := $(LIBFT_DIR)libft.a
 
-LIBFT_DIR = $(LIBS_DIR)/libft/
-LIBFT_A = $(LIBFT_DIR)libft.a
+RAYLIB_DIR := $(LIBS_DIR)raylib/src/
+RAYLIB_A := $(RAYLIB_DIR)libraylib.a
+RAYLIB_LIBS := -lGL -lm -lpthread -ldl -lrt -lX11
 
-RAYLIB_DIR = $(LIBS_DIR)/raylib/src/
-RAYLIB_A = $(RAYLIB_DIR)libraylib.a
-RAYLIB_DEP = -lGL -lm -lpthread -ldl -lrt -lX11
+CC := cc
+CFLAGS := -Wall -Wextra -Werror -g3 -MMD -MP
 
-SRCS_DIR = srcs/
-SRCS_FILES = main.c parsing.c pathfinding_bfs.c simulation.c  utils.c
+INCLUDES := -I include/ -I $(LIBFT_DIR)include
 
-SRCS = $(addprefix $(SRCS_DIR), $(SRCS_FILES))
+LDLIBS_MAND := -L$(LIBFT_DIR) -lft
+LDLIBS_BONUS := -L$(RAYLIB_DIR) -lraylib $(RAYLIB_LIBS)
 
-OBJS_DIR = objs/
-OBJS = $(patsubst $(SRCS_DIR)%.c, $(OBJS_DIR)%.o, $(SRCS))
+SHARED_SRCS := $(addprefix $(SRCS_DIR), $(SRCS_FILES))
+MAIN_SRC := $(SRCS_DIR)main.c
+VISU_SRCS := $(addprefix $(SRCS_DIR), $(VISU_FILES))
 
-VISU_SRC = visu.c
-VISU_OBJ = objs/visu.o
+SHARED_OBJS := $(patsubst $(SRCS_DIR)%.c, $(OBJS_DIR)%.o, $(SHARED_SRCS))
+MAIN_OBJ := $(patsubst $(SRCS_DIR)%.c, $(OBJS_DIR)%.o, $(MAIN_SRC))
+VISU_OBJS := $(patsubst $(SRCS_DIR)%.c, $(OBJS_DIR)%.o, $(VISU_SRCS))
+
+OBJS_MAND := $(MAIN_OBJ) $(SHARED_OBJS)
+OBJS_BONUS := $(VISU_OBJS) $(SHARED_OBJS)
+
+DEPS := $(OBJS_MAND:.o=.d) $(OBJS_BONUS:.o=.d)
 
 all: $(NAME)
 
 bonus: $(VISU)
 
-$(NAME): $(OBJS) $(LIBFT_A)
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBFT_A) -o $(NAME)
+$(NAME): $(OBJS_MAND) $(LIBFT_A)
+	@echo "[\033[0;32mLD\033[0m] linking $@..."
+	$(CC) $^ $(LDLIBS_MAND) -o $@
 
-$(VISU): $(VISU_OBJ) $(OBJS_DIR)parsing.o $(OBJS_DIR)pathfinding_bfs.o $(OBJS_DIR)simulation.o $(OBJS_DIR)utils.o $(OBJS_DIR)draw.o $(LIBFT_A) $(RAYLIB_A)
-	$(CXX) $(CXXFLAGS) $(VISU_OBJ) $(OBJS_DIR)parsing.o $(OBJS_DIR)pathfinding_bfs.o $(OBJS_DIR)simulation.o $(OBJS_DIR)utils.o $(OBJS_DIR)draw.o $(LIBFT_A) $(RAYLIB_A) $(RAYLIB_DEP) -o $(VISU)
+$(VISU): $(OBJS_BONUS) $(LIBFT_A) $(RAYLIB_A)
+	@echo "[\033[0;32mLD\033[0m] linking $@ (bonus)..."
+	$(CC) $^ $(LDLIBS_MAND) $(LDLIBS_BONUS) -o $@
 
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.c
 	@mkdir -p $(OBJS_DIR)
-	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
+	@echo "[\033[0;34mCC\033[0m] compiling $<..."
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(VISU_OBJ): $(VISU_SRC)
-	@mkdir -p $(OBJS_DIR)
-	$(CXX) $(CXXFLAGS) $(INC) -c $< -o $@
+$(VISU_OBJS): INCLUDES += -I $(RAYLIB_DIR)
 
 $(LIBFT_A):
-	@$(MAKE) -C $(LIBFT_DIR) bonus
+	@echo "[\033[0;33mMAKE\033[0m] building libft..."
+	@$(MAKE) -s -C $(LIBFT_DIR) bonus
 
 $(RAYLIB_A):
-	@$(MAKE) -C $(RAYLIB_DIR)
+	@echo "[\033[0;33mMAKE\033[0m] building raylib..."
+	@$(MAKE) -s -C $(RAYLIB_DIR)
+
+-include $(DEPS)
 
 clean:
+	@echo "[\033[0;31mCLEAN\033[0m] removing object files..."
 	@rm -rf $(OBJS_DIR)
-	@$(MAKE) -C $(LIBFT_DIR) clean
+	@echo "[\033[0;31mCLEAN\033[0m] cleaning external libraries..."
+	@$(MAKE) -s -C $(LIBFT_DIR) clean
+	@$(MAKE) -s -C $(RAYLIB_DIR) clean
 
 fclean: clean
+	@echo "[\033[0;31mFCLEAN\033[0m] removing executables..."
 	@rm -f $(NAME) $(VISU)
-	@$(MAKE) -C $(LIBFT_DIR) fclean
-	@$(MAKE) -C $(RAYLIB_DIR) clean
+	@echo "[\033[0;31mFCLEAN\033[0m] full cleaning libft..."
+	@$(MAKE) -s -C $(LIBFT_DIR) fclean
 
 re: fclean all
 
-valgrind: $(NAME)
-	valgrind --leak-check=full --show-leak-kinds=all -q ./$(NAME)
+rebonus: fclean bonus
 
-.PHONY: all bonus clean fclean re valgrind
+.PHONY: all bonus clean fclean re rebonus

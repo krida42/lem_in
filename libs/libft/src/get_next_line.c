@@ -95,4 +95,5 @@ void gnl_free_all_streams(void)
 		free(cur);
 		cur = next;
 	}
-	stream_lst = NULL;}
+	stream_lst = NULL;
+}

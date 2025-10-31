@@ -8,7 +8,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 INCLUDE_DIR = include
 
-CFLAGS = -Wall -Wextra -Werror -I$(INCLUDE_DIR)
+CFLAGS = -Wall -Wextra -Werror -I$(INCLUDE_DIR) -g3
 DEPFLAGS = -MMD -MP
 
 RESET = \033[0m
@@ -54,35 +54,35 @@ all: $(NAME)
 
 $(NAME): $(OBJ_DIR) $(OBJS)
 	@$(AR) $(NAME) $(OBJS)
-	@echo -e "$(GREEN)$(BOLD)✓ Mandatory $(NAME) created successfully!$(RESET)"
+	@echo "$(GREEN)$(BOLD)✓ Mandatory $(NAME) created successfully!$(RESET)"
 
 bonus: CFLAGS += -DBONUS_FLAG=1
 bonus: $(OBJ_DIR) $(OBJS) $(OBJS_BONUS)
 	@$(AR) $(NAME) $(OBJS) $(OBJS_BONUS)
-	@echo -e "$(GREEN)$(BOLD)✓ $(NAME) with Bonus parts created successfully!$(RESET)"
+	@echo "$(GREEN)$(BOLD)✓ $(NAME) with Bonus parts created successfully!$(RESET)"
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	@echo -e "$(YELLOW)Compiling:$(RESET) $<"
+	@echo "$(YELLOW)Compiling:$(RESET) $<"
 	@$(CC) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
 
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
-	@echo -e "$(BLUE)Created directory:$(RESET) $(OBJ_DIR)"
+	@echo "$(BLUE)Created directory:$(RESET) $(OBJ_DIR)"
 
 clean:
 	@if [ -d "$(OBJ_DIR)" ]; then \
 		$(RM) -r $(OBJ_DIR); \
-		echo -e "$(MAGENTA)Cleaned object directory:$(RESET) $(OBJ_DIR)"; \
+		echo "$(MAGENTA)Cleaned object directory:$(RESET) $(OBJ_DIR)"; \
 	else \
-		echo -e "$(GRAY)Object directory $(OBJ_DIR) not found. Nothing to clean.$(RESET)"; \
+		echo "$(GRAY)Object directory $(OBJ_DIR) not found. Nothing to clean.$(RESET)"; \
 	fi
 
 fclean: clean
 	@if [ -f "$(NAME)" ]; then \
 		$(RM) $(NAME); \
-		echo -e "$(RED)Cleaned library:$(RESET) $(NAME)"; \
+		echo "$(RED)Cleaned library:$(RESET) $(NAME)"; \
 	else \
-		echo -e "$(GRAY)Library $(NAME) not found. Nothing to clean.$(RESET)"; \
+		echo "$(GRAY)Library $(NAME) not found. Nothing to clean.$(RESET)"; \
 	fi
 
 

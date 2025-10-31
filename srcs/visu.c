@@ -1,6 +1,30 @@
 #include "../include/lemin.h"
 
-void init_ants(t_lemin* lemin);
+void init_ants(t_lemin* lemin)
+{
+	if (!lemin || lemin->nb_ants <= 0)
+		return;
+
+	lemin->ants = malloc(sizeof(t_ant*) * lemin->nb_ants);
+	if (!lemin->ants)
+		return;
+
+	Color colors[10] = { RED,  ORANGE, BLUE,   GREEN,	PURPLE,
+						 GOLD, LIME,   VIOLET, SKYBLUE, PINK };
+
+	for (int i = 0; i < lemin->nb_ants; i++)
+	{
+		t_ant* ant = malloc(sizeof(t_ant));
+		if (!ant)
+			continue;
+		ant->id = i + 1;
+		ant->current_room_id = lemin->start_id;
+		ant->path = NULL;
+		ant->path_position = 0;
+		ant->color = colors[i % 10];
+		lemin->ants[i] = ant;
+	}
+}
 
 int main(int argc, char** argv)
 {
@@ -26,6 +50,8 @@ int main(int argc, char** argv)
 	lemin->moves_steps = NULL;
 	lemin->ants = NULL;
 	lemin->nb_ants_who_left_start = 0;
+	lemin->capacity = NULL;
+	lemin->used = NULL;
 
 	int parsing_state = PARSING_ANTS;
 	enum RoomType next_room_type = ROOM_TYPE_UNKNOWN;
@@ -74,6 +100,7 @@ int main(int argc, char** argv)
 	{
 		ft_free_lemin(lemin);
 		ft_printf("ERROR: Map must have start and end rooms\n");
+		gnl_free_all_streams();
 		return (1);
 	}
 
@@ -87,5 +114,6 @@ int main(int argc, char** argv)
 
 	if (lemin)
 		ft_free_lemin(lemin);
+	gnl_free_all_streams();
 	return (0);
 }
