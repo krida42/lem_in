@@ -178,7 +178,10 @@ void simulate_ants(t_lemin* lemin)
 				{
 					ant->current_room_id = first_step_id;
 					ant->path_position = 1;
-					room_occupants[first_step_id] = ant->id;
+					if (first_step_id != lemin->end_id)
+						room_occupants[first_step_id] = ant->id;
+					else
+						ants_at_end++;
 
 					char* id_str = ft_itoa(ant->id);
 					char* temp1 = ft_strjoin("L", id_str);
